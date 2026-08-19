@@ -3,7 +3,7 @@
  * Uses Recharts for interactive data visualization
  */
 
-import React from 'react';
+
 import {
   LineChart,
   Line,

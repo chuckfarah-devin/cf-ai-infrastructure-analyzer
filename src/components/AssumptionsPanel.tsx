@@ -3,7 +3,7 @@
  * Provides transparency about simulation assumptions and data sources
  */
 
-import React from 'react';
+
 
 export function AssumptionsPanel() {
   return (

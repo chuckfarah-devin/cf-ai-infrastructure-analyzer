@@ -3,7 +3,7 @@
  * Shows peak grid load, DER contributions, and capacity released
  */
 
-import React from 'react';
+
 import { Tooltip } from './Tooltip';
 
 interface SummaryPanelProps {

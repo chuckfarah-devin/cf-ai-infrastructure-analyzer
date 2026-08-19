@@ -3,7 +3,7 @@
  * Adjustable parameters for EV participation, solar capacity, AI load, etc.
  */
 
-import React from 'react';
+
 import { Tooltip } from './Tooltip';
 
 interface ControlsProps {

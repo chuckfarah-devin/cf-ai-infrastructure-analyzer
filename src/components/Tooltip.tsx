@@ -3,7 +3,7 @@
  * Provides explanations on hover and keyboard focus
  */
 
-import React, { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 
 interface TooltipProps {
   term: string;

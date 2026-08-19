@@ -80,7 +80,7 @@ function simulateCore(config: ScenarioConfig): CoreSimulationResult {
       const r = calculateHour(
         config, hour, pass1SOC, totalUsableStorageMWh,
         aggregateMaxChargePowerMW, aggregateMaxDischargePowerMW,
-        peakHours, baselinePeakMW, futureChargingCapacityMWh[hour], 0
+        peakHours, futureChargingCapacityMWh[hour], 0
       );
       pass1NetLoads.push(r.netGridLoadMW);
       if (r.batteryDischargeMW > 0) lastDischargeHour = hour;
@@ -127,7 +127,6 @@ function simulateCore(config: ScenarioConfig): CoreSimulationResult {
       aggregateMaxChargePowerMW,
       aggregateMaxDischargePowerMW,
       peakHours,
-      baselinePeakMW,
       futureChargingCapacityMWh[hour],
       scheduledRecoveryMW[hour]
     );
@@ -149,7 +148,6 @@ function calculateHour(
   maxChargePowerMW: number,
   maxDischargePowerMW: number,
   peakHours: Set<number>,
-  baselinePeakMW: number = Infinity,
   futureChargingCapacityMWh: number = 0,
   scheduledRecoveryChargeMW: number = 0
 ): HourResult {
@@ -352,7 +350,6 @@ function calculateHour(
  */
 function summarizeSingleScenario(
   hours: HourResult[],
-  config: ScenarioConfig,
   totalUsableStorageMWh: number
 ): SimulationResult['summary'] {
   const peakNetGridLoadMW = Math.max(...hours.map(h => h.netGridLoadMW));
@@ -403,7 +400,7 @@ function compareScenarios(
  */
 export function simulateScenario(config: ScenarioConfig): SimulationResult {
   const coreResult = simulateCore(config);
-  const singleSummary = summarizeSingleScenario(coreResult.hours, config, coreResult.totalUsableStorageMWh);
+  const singleSummary = summarizeSingleScenario(coreResult.hours, coreResult.totalUsableStorageMWh);
 
   // If coordinated mode, compare with traditional
   let comparisonMetrics = {
