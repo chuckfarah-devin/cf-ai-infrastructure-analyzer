@@ -9,6 +9,7 @@ import { Tooltip } from './Tooltip';
 interface SummaryPanelProps {
   summary: {
     peakNetGridLoadMW: number;
+    peakTotalDemandMW: number;
     totalDistributedSolarMWh: number;
     totalBatteryDispatchMWh: number;
     minimumSOCMWh: number;
@@ -65,8 +66,22 @@ export function SummaryPanel({ summary, operatingMode }: SummaryPanelProps) {
       <div className="metrics-grid">
         <div className="metric-card">
           <h3>
-            <Tooltip term="Net Grid Load" definition="Electricity that must still be supplied by the grid after modeled solar, batteries, and other distributed resources are accounted for">
-              Peak Net Grid Load
+            <Tooltip term="Total Demand" definition="Total electricity demand from residential and AI data-center loads">
+              Peak Total Demand
+            </Tooltip>
+          </h3>
+          <div className="metric-value">
+            <Tooltip term="MW" definition="Megawatt, a unit of instantaneous electrical power">
+              {summary.peakTotalDemandMW.toFixed(1)} MW
+            </Tooltip>
+          </div>
+          <div className="metric-label">Maximum combined load</div>
+        </div>
+
+        <div className="metric-card">
+          <h3>
+            <Tooltip term="Net Grid Load" definition="Residual electricity that must be supplied by the grid after all local generation and battery dispatch are accounted for. Zero means local generation covers the load.">
+              Peak Grid Import
             </Tooltip>
           </h3>
           <div className="metric-value">
@@ -74,7 +89,7 @@ export function SummaryPanel({ summary, operatingMode }: SummaryPanelProps) {
               {summary.peakNetGridLoadMW.toFixed(1)} MW
             </Tooltip>
           </div>
-          <div className="metric-label">Maximum grid demand</div>
+          <div className="metric-label">Maximum residual grid need</div>
         </div>
 
         <div className="metric-card">

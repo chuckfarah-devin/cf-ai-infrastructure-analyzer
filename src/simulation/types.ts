@@ -33,6 +33,14 @@ export interface ScenarioConfig {
   // AI Infrastructure
   aiLoadMW: number;                    // ILLUSTRATIVE: 0 - 5,000 MW
 
+  // Conventional Generation (ILLUSTRATIVE)
+  nuclearCapacityMW?: number;          // ILLUSTRATIVE: Installed nuclear capacity (default 0)
+  naturalGasCapacityMW?: number;       // ILLUSTRATIVE: Installed natural gas capacity (default 0)
+  windCapacityMW?: number;             // ILLUSTRATIVE: Installed wind capacity (default 0)
+  nuclearAvailabilityPercent?: number; // ILLUSTRATIVE: Nuclear capacity factor (default 0.95)
+  naturalGasAvailabilityPercent?: number; // ILLUSTRATIVE: Gas availability (default 1.0)
+  windCapacityFactor?: number;         // ILLUSTRATIVE: Average wind capacity factor (default 0.35)
+
   // System Parameters
   batteryChargingEfficiency: number;   // ILLUSTRATIVE: 0 - 1 (default 0.95)
   batteryDischargingEfficiency: number; // ILLUSTRATIVE: 0 - 1 (default 0.95)
@@ -57,6 +65,10 @@ export interface HourResult {
   rooftopSolarMW: number;
   utilitySolarMW: number;
   totalSolarMW: number;
+  nuclearMW: number;
+  naturalGasMW: number;
+  windMW: number;
+  totalGenerationMW: number;          // Sum of all generation sources
 
   // Storage
   batteryChargeMW: number;             // Positive when charging (MW)
@@ -64,10 +76,12 @@ export interface HourResult {
   batteryStateOfChargeMWh: number;     // Current storage level (MWh)
 
   // Grid Interaction
-  netGridLoadMW: number;               // Residual utility supply requirement after DER contribution (MW)
+  netGridLoadMW: number;               // Residual utility supply requirement after all local generation (MW)
   batteryDispatchMW: number;          // Total battery discharge to grid (MW)
   solarContributionMW: number;         // Total solar reducing grid load (MW)
-  gridExportMW: number;                // Excess sent back to grid (MW)
+  conventionalContributionMW: number;  // Total conventional generation reducing grid load (MW)
+  gridExportMW: number;                // Excess local generation sent back to grid (MW)
+  curtailedGenerationMW: number;     // Excess generation that cannot be used or stored (MW)
 
   // Hurricane Mode Specific
   residentialUnmetLoadMW?: number;     // Residential load not served (MW)
@@ -87,6 +101,7 @@ export interface SimulationResult {
   hours: HourResult[];                 // Array of 24 HourResult objects
   summary: {
     peakNetGridLoadMW: number;
+    peakTotalDemandMW: number;
     totalDistributedSolarMWh: number;
     totalBatteryDispatchMWh: number;
     minimumSOCMWh: number;

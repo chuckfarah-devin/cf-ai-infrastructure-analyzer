@@ -22,19 +22,54 @@ code {
 .app-header {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  padding: 2rem;
-  text-align: center;
+  padding: 0 1.5rem;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+.app-header-brand {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
 }
 
 .app-header h1 {
-  margin: 0 0 0.5rem 0;
-  font-size: 2.5rem;
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
 }
 
-.app-header p {
-  margin: 0;
-  font-size: 1.1rem;
-  opacity: 0.9;
+.app-header-subtitle {
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
+.app-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.header-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.2s;
+}
+
+.header-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
 }
 
 .assumptions-toggle {
@@ -56,67 +91,84 @@ code {
 .app-content {
   display: flex;
   flex: 1;
-  gap: 2rem;
-  padding: 2rem;
-  max-width: 1600px;
+  gap: 1.5rem;
+  padding: 1rem 1.5rem;
+  max-width: 1920px;
   margin: 0 auto;
   width: 100%;
   box-sizing: border-box;
+  overflow: hidden;
+}
+
+.app-content.controls-collapsed {
+  gap: 0;
 }
 
 .sidebar {
-  width: 350px;
+  width: 320px;
   flex-shrink: 0;
+  transition: width 0.2s ease, opacity 0.2s ease;
+  overflow-y: auto;
+}
+
+.sidebar.hidden {
+  width: 0;
+  opacity: 0;
+  overflow: hidden;
 }
 
 .main-content {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1rem;
+  min-width: 0;
 }
 
 /* Controls Panel */
 .controls-panel {
   background: white;
   border-radius: 8px;
-  padding: 1.5rem;
+  padding: 1rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-size: 0.85rem;
 }
 
 .controls-panel h2 {
   margin-top: 0;
+  margin-bottom: 0.75rem;
   color: #333;
   border-bottom: 2px solid #667eea;
-  padding-bottom: 0.5rem;
+  padding-bottom: 0.4rem;
+  font-size: 1.1rem;
 }
 
 .control-section {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .control-section h3 {
-  margin: 0 0 1rem 0;
+  margin: 0 0 0.5rem 0;
   color: #555;
-  font-size: 1rem;
+  font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .control-section label {
   display: block;
-  margin-bottom: 0.75rem;
-  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.8rem;
   color: #666;
 }
 
 .control-section input[type="number"],
 .control-section input[type="range"] {
   width: 100%;
-  padding: 0.5rem;
+  padding: 0.35rem;
   border: 1px solid #ddd;
   border-radius: 4px;
-  margin-top: 0.25rem;
+  margin-top: 0.15rem;
 }
 
 .control-section input[type="radio"] {
@@ -128,9 +180,18 @@ code {
 }
 
 .control-section span {
-  margin-left: 0.5rem;
+  margin-left: 0.4rem;
   font-weight: 500;
   color: #667eea;
+}
+
+.control-section select {
+  width: 100%;
+  padding: 0.35rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  font-size: 0.8rem;
 }
 
 /* Summary Panel */
@@ -310,6 +371,250 @@ code {
 
   .assumptions-content {
     grid-template-columns: 1fr;
+  }
+}
+
+/* Energy Flow Visualization */
+.energy-flow {
+  background: white;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.energy-flow-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.energy-flow-header h2 {
+  margin: 0;
+  color: #333;
+  font-size: 1.2rem;
+}
+
+.hour-selector label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.hour-selector input[type="range"] {
+  width: 160px;
+}
+
+.energy-flow-diagram {
+  display: grid;
+  grid-template-columns: 1fr 200px 1fr;
+  gap: 0;
+  align-items: start;
+  position: relative;
+  min-height: 280px;
+}
+
+.flow-column {
+  position: relative;
+  z-index: 2;
+}
+
+.flow-column h3,
+.flow-storage-rail h4 {
+  margin: 0 0 0.5rem 0;
+  color: #555;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: center;
+}
+
+.flow-node {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  border-left: 3px solid #667eea;
+  background: #f8f9fa;
+  margin-bottom: 0.5rem;
+}
+
+.flow-node-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.flow-node-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.flow-node-label {
+  font-size: 0.7rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  line-height: 1.2;
+}
+
+.flow-node-value {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.flow-node-capacity {
+  font-size: 0.7rem;
+  color: #888;
+}
+
+.flow-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.flow-grid-hub {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+}
+
+.flow-grid-icon {
+  margin-bottom: 0.25rem;
+  opacity: 0.9;
+}
+
+.flow-grid-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.flow-grid-load {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-top: 0.25rem;
+}
+
+.flow-grid-sub {
+  font-size: 0.7rem;
+  opacity: 0.8;
+}
+
+.flow-storage-rail {
+  margin-top: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.flow-storage-row {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.flow-storage-node {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  border-left: 3px solid #22c55e;
+  background: #f8f9fa;
+  font-size: 0.8rem;
+  min-width: 220px;
+}
+
+.flow-storage-node strong {
+  margin-left: auto;
+  font-size: 0.85rem;
+  color: #333;
+}
+
+.flow-storage-node small {
+  display: block;
+  font-size: 0.65rem;
+  color: #888;
+  text-align: right;
+}
+
+.flow-connectors {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: visible;
+}
+
+.flow-path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-opacity: 0.55;
+  stroke-dasharray: 1.2 2.4;
+  vector-effect: non-scaling-stroke;
+  animation: flow-dashes 1.8s linear infinite;
+}
+
+@keyframes flow-dashes {
+  to {
+    stroke-dashoffset: -7.2;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flow-path {
+    animation: none;
+    stroke-dasharray: none;
+  }
+}
+
+.energy-flow-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #e5e7eb;
+  font-size: 0.75rem;
+  color: #666;
+}
+
+@media (max-width: 1100px) {
+  .energy-flow-diagram {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .flow-center {
+    order: -1;
+  }
+
+  .flow-connectors {
+    display: none;
+  }
+
+  .flow-storage-row {
+    flex-direction: column;
+    align-items: center;
   }
 }
 

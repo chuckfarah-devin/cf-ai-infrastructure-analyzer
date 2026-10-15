@@ -5,6 +5,7 @@
 
 
 import { Tooltip } from './Tooltip';
+import { scenarioPresets } from '../data/floridaDefaults';
 
 interface ControlsProps {
   config: {
@@ -21,6 +22,12 @@ interface ControlsProps {
     homeChargePowerKW: number;
     homeDischargePowerKW: number;
     aiLoadMW: number;
+    nuclearCapacityMW?: number;
+    naturalGasCapacityMW?: number;
+    windCapacityMW?: number;
+    nuclearAvailabilityPercent?: number;
+    naturalGasAvailabilityPercent?: number;
+    windCapacityFactor?: number;
     batteryChargingEfficiency: number;
     batteryDischargingEfficiency: number;
     operatingMode: 'traditional' | 'coordinated';
@@ -48,9 +55,64 @@ export function Controls({ config, onConfigChange }: ControlsProps) {
     });
   };
 
+  const handlePresetChange = (presetId: string) => {
+    const preset = scenarioPresets.find(p => p.id === presetId);
+    if (preset) {
+      onConfigChange({ ...preset.config });
+    }
+  };
+
+  const currentPresetId = scenarioPresets.find(p =>
+    p.config.nuclearCapacityMW === config.nuclearCapacityMW &&
+    p.config.naturalGasCapacityMW === config.naturalGasCapacityMW &&
+    p.config.distributedSolarMW === config.distributedSolarMW &&
+    p.config.aiLoadMW === config.aiLoadMW
+  )?.id ?? 'custom';
+
   return (
     <div className="controls-panel">
       <h2>Simulation Controls</h2>
+
+      <div className="control-section">
+        <h3>Scenario Preset</h3>
+        <label>
+          <select
+            value={currentPresetId}
+            onChange={(e) => handlePresetChange(e.target.value)}
+          >
+            {scenarioPresets.map(preset => (
+              <option key={preset.id} value={preset.id}>{preset.label}</option>
+            ))}
+            <option value="custom" disabled>Custom</option>
+          </select>
+        </label>
+      </div>
+
+      <div className="control-section">
+        <h3>Operating Mode</h3>
+        <label>
+          <input
+            type="radio"
+            name="operatingMode"
+            value="traditional"
+            checked={config.operatingMode === 'traditional'}
+            onChange={() => handleChange('operatingMode', 'traditional')}
+          />
+          Traditional (Current State)
+        </label>
+        <label>
+          <input
+            type="radio"
+            name="operatingMode"
+            value="coordinated"
+            checked={config.operatingMode === 'coordinated'}
+            onChange={() => handleChange('operatingMode', 'coordinated')}
+          />
+          <Tooltip term="VPP" definition="Virtual Power Plant - a network of decentralized power units that act as a single power plant">
+            Coordinated (VPP)
+          </Tooltip>
+        </label>
+      </div>
 
       <div className="control-section">
         <h3>
@@ -147,28 +209,76 @@ export function Controls({ config, onConfigChange }: ControlsProps) {
       </div>
 
       <div className="control-section">
-        <h3>Operating Mode</h3>
+        <h3>
+          <Tooltip term="Conventional Generation" definition="Centralized generation resources: nuclear baseload, dispatchable natural gas, and variable wind">
+            Conventional Generation
+          </Tooltip>
+        </h3>
         <label>
+          Nuclear Capacity (MW)
           <input
-            type="radio"
-            name="operatingMode"
-            value="traditional"
-            checked={config.operatingMode === 'traditional'}
-            onChange={() => handleChange('operatingMode', 'traditional')}
+            type="number"
+            value={config.nuclearCapacityMW ?? 0}
+            onChange={(e) => handleChange('nuclearCapacityMW', parseFloat(e.target.value))}
+            min="0"
+            step="100"
           />
-          Traditional (Current State)
         </label>
         <label>
+          Nuclear Availability
           <input
-            type="radio"
-            name="operatingMode"
-            value="coordinated"
-            checked={config.operatingMode === 'coordinated'}
-            onChange={() => handleChange('operatingMode', 'coordinated')}
+            type="range"
+            value={config.nuclearAvailabilityPercent ?? 0.95}
+            onChange={(e) => handleChange('nuclearAvailabilityPercent', parseFloat(e.target.value))}
+            min="0"
+            max="1"
+            step="0.05"
           />
-          <Tooltip term="VPP" definition="Virtual Power Plant - a network of decentralized power units that act as a single power plant">
-            Coordinated (VPP)
-          </Tooltip>
+          <span>{((config.nuclearAvailabilityPercent ?? 0.95) * 100).toFixed(0)}%</span>
+        </label>
+        <label>
+          Natural Gas Capacity (MW)
+          <input
+            type="number"
+            value={config.naturalGasCapacityMW ?? 0}
+            onChange={(e) => handleChange('naturalGasCapacityMW', parseFloat(e.target.value))}
+            min="0"
+            step="100"
+          />
+        </label>
+        <label>
+          Gas Availability
+          <input
+            type="range"
+            value={config.naturalGasAvailabilityPercent ?? 1.0}
+            onChange={(e) => handleChange('naturalGasAvailabilityPercent', parseFloat(e.target.value))}
+            min="0"
+            max="1"
+            step="0.05"
+          />
+          <span>{((config.naturalGasAvailabilityPercent ?? 1.0) * 100).toFixed(0)}%</span>
+        </label>
+        <label>
+          Wind Capacity (MW)
+          <input
+            type="number"
+            value={config.windCapacityMW ?? 0}
+            onChange={(e) => handleChange('windCapacityMW', parseFloat(e.target.value))}
+            min="0"
+            step="100"
+          />
+        </label>
+        <label>
+          Wind Capacity Factor
+          <input
+            type="range"
+            value={config.windCapacityFactor ?? 0.35}
+            onChange={(e) => handleChange('windCapacityFactor', parseFloat(e.target.value))}
+            min="0"
+            max="1"
+            step="0.05"
+          />
+          <span>{((config.windCapacityFactor ?? 0.35) * 100).toFixed(0)}%</span>
         </label>
       </div>
 
