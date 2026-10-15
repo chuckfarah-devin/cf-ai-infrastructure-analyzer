@@ -10,9 +10,12 @@ import {
   Server,
   ArrowRight,
   ArrowLeft,
-  Activity
+  Activity,
+  Factory,
+  Cable
 } from 'lucide-react';
 import type { ScenarioConfig, HourResult } from '../simulation/types';
+import { FPL_PUBLIC_BASELINE_DATE, FPL_SCALE_FACTOR } from '../data/fplPublicBaseline';
 
 interface EnergyFlowProps {
   config: ScenarioConfig;
@@ -26,8 +29,10 @@ const resourceConfig: Record<
   utilitySolar: { label: 'Utility Solar', icon: Sun, color: '#f59e0b' },
   rooftopSolar: { label: 'Rooftop Solar', icon: Home, color: '#f97316' },
   nuclear: { label: 'Nuclear', icon: Atom, color: '#8b5cf6' },
-  naturalGas: { label: 'Natural Gas', icon: Flame, color: '#ef4444' },
+  naturalGas: { label: 'Primarily Natural Gas', icon: Flame, color: '#ef4444' },
   wind: { label: 'Wind', icon: Wind, color: '#06b6d4' },
+  otherGeneration: { label: 'Other Generation', icon: Factory, color: '#78716c' },
+  purchasedPower: { label: 'Purchased Power', icon: Cable, color: '#0f766e' },
   gridImport: { label: 'Grid Imports', icon: ArrowRight, color: '#64748b' }
 };
 
@@ -39,6 +44,7 @@ const demandConfig: Record<string, { label: string; icon: React.ElementType; col
 };
 
 const storageConfig: Record<string, { label: string; icon: React.ElementType; color: string }> = {
+  utilityBattery: { label: 'Utility Batteries', icon: Battery, color: '#22c55e' },
   residentialBattery: { label: 'Residential Batteries', icon: Home, color: '#84cc16' },
   evBattery: { label: 'EV Batteries (V2G)', icon: Car, color: '#06b6d4' }
 };
@@ -73,29 +79,36 @@ export function EnergyFlow({ config, hours }: EnergyFlowProps) {
   const hour = hours[selectedHour];
   if (!hour) return null;
 
-  const evFraction = useMemo(() => {
+  const storageFractions = useMemo(() => {
     const participatingEVs = config.totalEVs * config.evParticipationRate;
     const evMWh = (participatingEVs * config.averageEVBatteryKWh * config.evAvailableCapacityPercent) / 1000;
     const homeMWh = (config.homeBatteryCount * config.homeBatteryKWh) / 1000;
-    const total = evMWh + homeMWh;
-    return total > 0 ? evMWh / total : 0;
+    const utilityMWh = config.utilityBatteryEnergyMWh || 0;
+    const total = evMWh + homeMWh + utilityMWh;
+    return total > 0
+      ? { ev: evMWh / total, home: homeMWh / total, utility: utilityMWh / total }
+      : { ev: 0, home: 0, utility: 0 };
   }, [config]);
 
-  const evChargeMW = hour.batteryChargeMW * evFraction;
-  const homeChargeMW = hour.batteryChargeMW * (1 - evFraction);
-  const evDischargeMW = hour.batteryDischargeMW * evFraction;
-  const homeDischargeMW = hour.batteryDischargeMW * (1 - evFraction);
+  const evChargeMW = hour.batteryChargeMW * storageFractions.ev;
+  const homeChargeMW = hour.batteryChargeMW * storageFractions.home;
+  const utilityChargeMW = hour.batteryChargeMW * storageFractions.utility;
+  const evDischargeMW = hour.batteryDischargeMW * storageFractions.ev;
+  const homeDischargeMW = hour.batteryDischargeMW * storageFractions.home;
+  const utilityDischargeMW = hour.batteryDischargeMW * storageFractions.utility;
 
   const gridImportMW = Math.max(0, hour.netGridLoadMW);
 
   const generationRows = [
-    { key: 'utilitySolar', value: hour.utilitySolarMW, available: config.utilitySolarMW },
-    { key: 'rooftopSolar', value: hour.rooftopSolarMW, available: config.distributedSolarMW },
-    { key: 'nuclear', value: hour.nuclearMW, available: config.nuclearCapacityMW ?? 0 },
-    { key: 'naturalGas', value: hour.naturalGasMW, available: config.naturalGasCapacityMW ?? 0 },
-    { key: 'wind', value: hour.windMW, available: config.windCapacityMW ?? 0 },
-    { key: 'gridImport', value: gridImportMW, available: null }
-  ].filter(row => row.value > 0 || (row.available !== null && row.available > 0));
+    { key: 'utilitySolar', value: hour.utilitySolarMW, installed: config.utilitySolarMW, available: hour.utilitySolarMW },
+    { key: 'rooftopSolar', value: hour.rooftopSolarMW, installed: config.distributedSolarMW, available: hour.rooftopSolarMW },
+    { key: 'nuclear', value: hour.nuclearMW, installed: config.nuclearCapacityMW ?? 0, available: hour.nuclearAvailableMW },
+    { key: 'naturalGas', value: hour.naturalGasMW, installed: config.naturalGasCapacityMW ?? 0, available: hour.naturalGasAvailableMW },
+    { key: 'wind', value: hour.windMW, installed: config.windCapacityMW ?? 0, available: hour.windAvailableMW },
+    { key: 'otherGeneration', value: hour.otherGenerationMW, installed: config.otherGenerationCapacityMW ?? 0, available: hour.otherGenerationAvailableMW },
+    { key: 'purchasedPower', value: hour.purchasedPowerMW, installed: config.purchasedPowerCapacityMW ?? 0, available: hour.purchasedPowerAvailableMW },
+    { key: 'gridImport', value: gridImportMW, installed: null, available: null }
+  ].filter(row => row.value > 0 || (row.installed !== null && row.installed > 0));
 
   const demandRows = [
     { key: 'residential', value: hour.residentialDemandMW },
@@ -170,13 +183,20 @@ export function EnergyFlow({ config, hours }: EnergyFlowProps) {
   const imports = Math.max(0, hour.netGridLoadMW);
   const exports = hour.gridExportMW;
   const energyBalance =
-    hour.totalGenerationMW + hour.batteryDischargeMW + imports -
+    hour.totalGenerationMW + hour.purchasedPowerMW + hour.batteryDischargeMW + imports -
     (hour.totalDemandMW + hour.batteryChargeMW + exports + hour.curtailedGenerationMW);
 
   return (
     <div className="energy-flow">
       <div className="energy-flow-header">
-        <h2>Florida Energy Flow</h2>
+        <div>
+          <h2>{config.presetId === 'fpl-public' ? 'Public FPL Portfolio — Scaled Illustrative Dispatch' : 'Florida Energy Flow'}</h2>
+          {config.presetId === 'fpl-public' && (
+            <p className="energy-flow-disclaimer">
+              Public capacities as of {FPL_PUBLIC_BASELINE_DATE}, scaled uniformly to {(FPL_SCALE_FACTOR * 100).toFixed(2)}%. Primarily Natural Gas includes dual-fuel capability. Illustrative priority dispatch does not reproduce FPL load, reserves, transmission constraints, or actual operations.
+            </p>
+          )}
+        </div>
         <div className="hour-selector">
           <label>
             Hour:
@@ -245,9 +265,9 @@ export function EnergyFlow({ config, hours }: EnergyFlowProps) {
                 <div className="flow-node-body">
                   <div className="flow-node-label">{cfg.label}</div>
                   <div className="flow-node-value">{formatMW(row.value)}</div>
-                  {row.available !== null && row.available > 0 && (
+                  {row.installed !== null && row.installed > 0 && (
                     <div className="flow-node-capacity">
-                      installed capacity {formatMW(row.available)}
+                      installed {formatMW(row.installed)} · available {formatMW(row.available ?? 0)}
                     </div>
                   )}
                 </div>
@@ -263,8 +283,8 @@ export function EnergyFlow({ config, hours }: EnergyFlowProps) {
               <Activity size={36} />
             </div>
             <div className="flow-grid-label">Florida Power Grid</div>
-            <div className="flow-grid-load">{formatMW(hour.totalDemandMW)}</div>
-            <div className="flow-grid-sub">Total Load</div>
+            <div className="flow-grid-load">{formatMW(hour.totalDemandMW + hour.batteryChargeMW)}</div>
+            <div className="flow-grid-sub">System Demand incl. Storage Charging</div>
           </div>
         </div>
 
@@ -293,6 +313,14 @@ export function EnergyFlow({ config, hours }: EnergyFlowProps) {
       <div className="flow-storage-rail">
         <h4>Storage Resources</h4>
         <div className="flow-storage-row">
+          {(config.utilityBatteryPowerMW ?? 0) > 0 && (
+            <div className="flow-storage-node" style={{ borderColor: storageConfig.utilityBattery.color }}>
+              <Battery size={20} />
+              <span>{storageConfig.utilityBattery.label}</span>
+              <strong>{formatMW(utilityDischargeMW)} / {formatMW(utilityChargeMW)}</strong>
+              <small>Discharge / Charge</small>
+            </div>
+          )}
           <div className="flow-storage-node" style={{ borderColor: storageConfig.residentialBattery.color }}>
             <Home size={20} />
             <span>{storageConfig.residentialBattery.label}</span>

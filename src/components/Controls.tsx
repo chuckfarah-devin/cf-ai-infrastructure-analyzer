@@ -6,38 +6,15 @@
 
 import { Tooltip } from './Tooltip';
 import { scenarioPresets } from '../data/floridaDefaults';
+import type { ScenarioConfig } from '../simulation/types';
 
 interface ControlsProps {
-  config: {
-    totalEVs: number;
-    evParticipationRate: number;
-    averageEVBatteryKWh: number;
-    evAvailableCapacityPercent: number;
-    evChargePowerKW: number;
-    evDischargePowerKW: number;
-    distributedSolarMW: number;
-    utilitySolarMW: number;
-    homeBatteryCount: number;
-    homeBatteryKWh: number;
-    homeChargePowerKW: number;
-    homeDischargePowerKW: number;
-    aiLoadMW: number;
-    nuclearCapacityMW?: number;
-    naturalGasCapacityMW?: number;
-    windCapacityMW?: number;
-    nuclearAvailabilityPercent?: number;
-    naturalGasAvailabilityPercent?: number;
-    windCapacityFactor?: number;
-    batteryChargingEfficiency: number;
-    batteryDischargingEfficiency: number;
-    operatingMode: 'traditional' | 'coordinated';
-    hurricaneMode: boolean;
-    criticalLoadPercent: number;
-    initialSOCPercent: number;
-    minimumSOCPercent: number;
-    terminalSOCPercent: number;
-  };
-  onConfigChange: (config: ControlsProps['config']) => void;
+  config: ScenarioConfig;
+  onConfigChange: (config: ScenarioConfig) => void;
+}
+
+function displayCapacity(value: number | undefined): number {
+  return Number((value ?? 0).toFixed(1));
 }
 
 export function Controls({ config, onConfigChange }: ControlsProps) {
@@ -62,12 +39,7 @@ export function Controls({ config, onConfigChange }: ControlsProps) {
     }
   };
 
-  const currentPresetId = scenarioPresets.find(p =>
-    p.config.nuclearCapacityMW === config.nuclearCapacityMW &&
-    p.config.naturalGasCapacityMW === config.naturalGasCapacityMW &&
-    p.config.distributedSolarMW === config.distributedSolarMW &&
-    p.config.aiLoadMW === config.aiLoadMW
-  )?.id ?? 'custom';
+  const currentPresetId = config.presetId ?? 'custom';
 
   return (
     <div className="controls-panel">
@@ -162,7 +134,7 @@ export function Controls({ config, onConfigChange }: ControlsProps) {
           Distributed Solar (MW)
           <input
             type="number"
-            value={config.distributedSolarMW}
+            value={displayCapacity(config.distributedSolarMW)}
             onChange={(e) => handleChange('distributedSolarMW', parseFloat(e.target.value))}
             min="0"
             step="100"
@@ -172,7 +144,7 @@ export function Controls({ config, onConfigChange }: ControlsProps) {
           Utility Solar (MW)
           <input
             type="number"
-            value={config.utilitySolarMW}
+            value={displayCapacity(config.utilitySolarMW)}
             onChange={(e) => handleChange('utilitySolarMW', parseFloat(e.target.value))}
             min="0"
             step="100"
@@ -218,7 +190,7 @@ export function Controls({ config, onConfigChange }: ControlsProps) {
           Nuclear Capacity (MW)
           <input
             type="number"
-            value={config.nuclearCapacityMW ?? 0}
+            value={displayCapacity(config.nuclearCapacityMW)}
             onChange={(e) => handleChange('nuclearCapacityMW', parseFloat(e.target.value))}
             min="0"
             step="100"
@@ -237,10 +209,10 @@ export function Controls({ config, onConfigChange }: ControlsProps) {
           <span>{((config.nuclearAvailabilityPercent ?? 0.95) * 100).toFixed(0)}%</span>
         </label>
         <label>
-          Natural Gas Capacity (MW)
+          Primarily Natural Gas (MW)
           <input
             type="number"
-            value={config.naturalGasCapacityMW ?? 0}
+            value={displayCapacity(config.naturalGasCapacityMW)}
             onChange={(e) => handleChange('naturalGasCapacityMW', parseFloat(e.target.value))}
             min="0"
             step="100"
@@ -262,7 +234,7 @@ export function Controls({ config, onConfigChange }: ControlsProps) {
           Wind Capacity (MW)
           <input
             type="number"
-            value={config.windCapacityMW ?? 0}
+            value={displayCapacity(config.windCapacityMW)}
             onChange={(e) => handleChange('windCapacityMW', parseFloat(e.target.value))}
             min="0"
             step="100"
@@ -279,6 +251,36 @@ export function Controls({ config, onConfigChange }: ControlsProps) {
             step="0.05"
           />
           <span>{((config.windCapacityFactor ?? 0.35) * 100).toFixed(0)}%</span>
+        </label>
+        <label>
+          Other Generation (MW)
+          <input
+            type="number"
+            value={displayCapacity(config.otherGenerationCapacityMW)}
+            onChange={(e) => handleChange('otherGenerationCapacityMW', parseFloat(e.target.value))}
+            min="0"
+            step="10"
+          />
+        </label>
+        <label>
+          Purchased Power (MW)
+          <input
+            type="number"
+            value={displayCapacity(config.purchasedPowerCapacityMW)}
+            onChange={(e) => handleChange('purchasedPowerCapacityMW', parseFloat(e.target.value))}
+            min="0"
+            step="10"
+          />
+        </label>
+        <label>
+          Utility Battery Power (MW)
+          <input
+            type="number"
+            value={displayCapacity(config.utilityBatteryPowerMW)}
+            onChange={(e) => handleChange('utilityBatteryPowerMW', parseFloat(e.target.value))}
+            min="0"
+            step="10"
+          />
         </label>
       </div>
 

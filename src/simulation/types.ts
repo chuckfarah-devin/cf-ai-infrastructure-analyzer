@@ -33,13 +33,25 @@ export interface ScenarioConfig {
   // AI Infrastructure
   aiLoadMW: number;                    // ILLUSTRATIVE: 0 - 5,000 MW
 
-  // Conventional Generation (ILLUSTRATIVE)
-  nuclearCapacityMW?: number;          // ILLUSTRATIVE: Installed nuclear capacity (default 0)
-  naturalGasCapacityMW?: number;       // ILLUSTRATIVE: Installed natural gas capacity (default 0)
-  windCapacityMW?: number;             // ILLUSTRATIVE: Installed wind capacity (default 0)
-  nuclearAvailabilityPercent?: number; // ILLUSTRATIVE: Nuclear capacity factor (default 0.95)
-  naturalGasAvailabilityPercent?: number; // ILLUSTRATIVE: Gas availability (default 1.0)
-  windCapacityFactor?: number;         // ILLUSTRATIVE: Average wind capacity factor (default 0.35)
+  // Utility Portfolio Generation
+  nuclearCapacityMW?: number;
+  naturalGasCapacityMW?: number;
+  windCapacityMW?: number;
+  otherGenerationCapacityMW?: number;
+  purchasedPowerCapacityMW?: number;
+  nuclearAvailabilityPercent?: number;
+  naturalGasAvailabilityPercent?: number;
+  windCapacityFactor?: number;
+  otherGenerationAvailabilityPercent?: number;
+  purchasedPowerAvailabilityPercent?: number;
+
+  // Utility Battery Storage
+  utilityBatteryPowerMW?: number;
+  utilityBatteryEnergyMWh?: number;
+
+  // Preset Metadata
+  presetId?: 'legacy' | 'fpl-public';
+  portfolioScaleFactor?: number;
 
   // System Parameters
   batteryChargingEfficiency: number;   // ILLUSTRATIVE: 0 - 1 (default 0.95)
@@ -65,10 +77,17 @@ export interface HourResult {
   rooftopSolarMW: number;
   utilitySolarMW: number;
   totalSolarMW: number;
+  nuclearAvailableMW: number;
   nuclearMW: number;
+  naturalGasAvailableMW: number;
   naturalGasMW: number;
+  windAvailableMW: number;
   windMW: number;
-  totalGenerationMW: number;          // Sum of all generation sources
+  otherGenerationAvailableMW: number;
+  otherGenerationMW: number;
+  purchasedPowerAvailableMW: number;
+  purchasedPowerMW: number;
+  totalGenerationMW: number;          // Owned generation; purchased power is tracked separately
 
   // Storage
   batteryChargeMW: number;             // Positive when charging (MW)

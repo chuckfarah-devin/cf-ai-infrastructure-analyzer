@@ -4,6 +4,11 @@
  */
 
 import type { ScenarioConfig } from '../simulation/types';
+import {
+  FPL_ILLUSTRATIVE_BATTERY_DURATION_HOURS,
+  FPL_SCALE_FACTOR,
+  fplScaledCapacityMW
+} from './fplPublicBaseline';
 
 /**
  * Common system parameters shared by all presets.
@@ -41,22 +46,28 @@ export const legacyDemoDefaults: ScenarioConfig = {
 
   aiLoadMW: 1000,
 
-  // Conventional generation disabled in the legacy demo preset
+  // Utility portfolio resources disabled in the legacy demo preset
   nuclearCapacityMW: 0,
   naturalGasCapacityMW: 0,
   windCapacityMW: 0,
+  otherGenerationCapacityMW: 0,
+  purchasedPowerCapacityMW: 0,
   nuclearAvailabilityPercent: 0.95,
   naturalGasAvailabilityPercent: 1.0,
   windCapacityFactor: 0.35,
+  otherGenerationAvailabilityPercent: 0.85,
+  purchasedPowerAvailabilityPercent: 1.0,
+  utilityBatteryPowerMW: 0,
+  utilityBatteryEnergyMWh: 0,
+  presetId: 'legacy',
 
   ...commonSystemDefaults
 };
 
 /**
- * Illustrative FPL-style generation preset.
- * Adds nuclear baseload and dispatchable natural gas to the legacy DER mix.
- * Wind is set to zero to reflect limited onshore wind resource in Florida.
- * All values are ILLUSTRATIVE and are not verified real-time FPL data.
+ * Public FPL Portfolio — Scaled Illustrative Dispatch.
+ * Published December 31, 2025 FPL capacities are scaled by one common factor
+ * to the demonstrator's 6,000 MW peak. Dispatch is illustrative, not FPL practice.
  */
 export const fplGenerationDefaults: ScenarioConfig = {
   totalEVs: 450400,
@@ -67,7 +78,7 @@ export const fplGenerationDefaults: ScenarioConfig = {
   evDischargePowerKW: 7.2,
 
   distributedSolarMW: 3150,
-  utilitySolarMW: 2000,
+  utilitySolarMW: fplScaledCapacityMW.utilitySolar,
 
   homeBatteryCount: 250000,
   homeBatteryKWh: 13.5,
@@ -76,13 +87,20 @@ export const fplGenerationDefaults: ScenarioConfig = {
 
   aiLoadMW: 1000,
 
-  // ILLUSTRATIVE conventional generation capacities
-  nuclearCapacityMW: 3500,
-  naturalGasCapacityMW: 12000,
-  windCapacityMW: 0,
+  nuclearCapacityMW: fplScaledCapacityMW.nuclear,
+  naturalGasCapacityMW: fplScaledCapacityMW.primarilyNaturalGas,
+  windCapacityMW: fplScaledCapacityMW.wind,
+  otherGenerationCapacityMW: fplScaledCapacityMW.otherGeneration,
+  purchasedPowerCapacityMW: fplScaledCapacityMW.purchasedPower,
   nuclearAvailabilityPercent: 0.95,
   naturalGasAvailabilityPercent: 1.0,
   windCapacityFactor: 0.35,
+  otherGenerationAvailabilityPercent: 0.85,
+  purchasedPowerAvailabilityPercent: 1.0,
+  utilityBatteryPowerMW: fplScaledCapacityMW.batteryStorage,
+  utilityBatteryEnergyMWh: fplScaledCapacityMW.batteryStorage * FPL_ILLUSTRATIVE_BATTERY_DURATION_HOURS,
+  presetId: 'fpl-public',
+  portfolioScaleFactor: FPL_SCALE_FACTOR,
 
   ...commonSystemDefaults
 };
@@ -97,5 +115,5 @@ export const floridaDefaults: ScenarioConfig = legacyDemoDefaults;
  */
 export const scenarioPresets: { id: string; label: string; config: ScenarioConfig }[] = [
   { id: 'legacy', label: 'Legacy Demo (DERs only)', config: legacyDemoDefaults },
-  { id: 'fpl', label: 'Illustrative FPL Generation Mix', config: fplGenerationDefaults }
+  { id: 'fpl-public', label: 'Public FPL Portfolio — Scaled', config: fplGenerationDefaults }
 ];

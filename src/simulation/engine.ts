@@ -26,17 +26,19 @@ function simulateCore(config: ScenarioConfig): CoreSimulationResult {
 
   const homeStorageKWh = config.homeBatteryCount * config.homeBatteryKWh;
   const homeStorageMWh = homeStorageKWh / 1000; // Convert kWh to MWh
+  const utilityStorageMWh = config.utilityBatteryEnergyMWh || 0;
 
-  const totalUsableStorageMWh = usableEVStorageMWh + homeStorageMWh;
+  const totalUsableStorageMWh = usableEVStorageMWh + homeStorageMWh + utilityStorageMWh;
 
   // 2. Calculate power capability limits
   const evMaxChargePowerMW = (participatingEVs * config.evChargePowerKW) / 1000;
   const evMaxDischargePowerMW = (participatingEVs * config.evDischargePowerKW) / 1000;
   const homeMaxChargePowerMW = (config.homeBatteryCount * config.homeChargePowerKW) / 1000;
   const homeMaxDischargePowerMW = (config.homeBatteryCount * config.homeDischargePowerKW) / 1000;
+  const utilityBatteryPowerMW = config.utilityBatteryPowerMW || 0;
 
-  const aggregateMaxChargePowerMW = evMaxChargePowerMW + homeMaxChargePowerMW;
-  const aggregateMaxDischargePowerMW = evMaxDischargePowerMW + homeMaxDischargePowerMW;
+  const aggregateMaxChargePowerMW = evMaxChargePowerMW + homeMaxChargePowerMW + utilityBatteryPowerMW;
+  const aggregateMaxDischargePowerMW = evMaxDischargePowerMW + homeMaxDischargePowerMW + utilityBatteryPowerMW;
 
   // 3. Calculate baseline net grid load without any storage dispatch
   // Includes must-run nuclear/wind and dispatchable natural gas serving residual demand.
@@ -50,13 +52,17 @@ function simulateCore(config: ScenarioConfig): CoreSimulationResult {
     const nuclearCapacityMW = config.nuclearCapacityMW || 0;
     const naturalGasCapacityMW = config.naturalGasCapacityMW || 0;
     const windCapacityMW = config.windCapacityMW || 0;
+    const otherCapacityMW = config.otherGenerationCapacityMW || 0;
+    const purchasedPowerCapacityMW = config.purchasedPowerCapacityMW || 0;
 
     const nuclearMW = nuclearCapacityMW * getNuclearAvailability(hour, config.nuclearAvailabilityPercent ?? 0.95);
     const windMW = windCapacityMW * getWindAvailability(hour, config.windCapacityFactor ?? 0.35);
+    const otherMW = otherCapacityMW * (config.otherGenerationAvailabilityPercent ?? 0.85);
+    const purchasedPowerMW = purchasedPowerCapacityMW * (config.purchasedPowerAvailabilityPercent ?? 1.0);
     const availableGasMW = naturalGasCapacityMW * getNaturalGasAvailability(hour, config.naturalGasAvailabilityPercent ?? 1.0);
 
     const totalDemand = residentialDemand + config.aiLoadMW;
-    const residualAfterMustRun = Math.max(0, totalDemand - totalSolar - nuclearMW - windMW);
+    const residualAfterMustRun = Math.max(0, totalDemand - totalSolar - nuclearMW - windMW - otherMW - purchasedPowerMW);
     const gasMW = Math.min(availableGasMW, residualAfterMustRun);
 
     return Math.max(0, residualAfterMustRun - gasMW);
@@ -175,14 +181,22 @@ function calculateHour(
   const rooftopSolarMW = config.distributedSolarMW * solarFactor;
   const utilitySolarMW = config.utilitySolarMW * solarFactor;
 
-  // Conventional generation capacities and availability (ILLUSTRATIVE)
+  // Installed capacity, hourly availability, and actual dispatch remain distinct.
   const nuclearCapacityMW = config.nuclearCapacityMW || 0;
   const naturalGasCapacityMW = config.naturalGasCapacityMW || 0;
   const windCapacityMW = config.windCapacityMW || 0;
+  const otherGenerationCapacityMW = config.otherGenerationCapacityMW || 0;
+  const purchasedPowerCapacityMW = config.purchasedPowerCapacityMW || 0;
 
-  const nuclearMW = nuclearCapacityMW * getNuclearAvailability(hour, config.nuclearAvailabilityPercent ?? 0.95);
-  const windMW = windCapacityMW * getWindAvailability(hour, config.windCapacityFactor ?? 0.35);
-  const availableGasMW = naturalGasCapacityMW * getNaturalGasAvailability(hour, config.naturalGasAvailabilityPercent ?? 1.0);
+  const nuclearAvailableMW = nuclearCapacityMW * getNuclearAvailability(hour, config.nuclearAvailabilityPercent ?? 0.95);
+  const windAvailableMW = windCapacityMW * getWindAvailability(hour, config.windCapacityFactor ?? 0.35);
+  const naturalGasAvailableMW = naturalGasCapacityMW * getNaturalGasAvailability(hour, config.naturalGasAvailabilityPercent ?? 1.0);
+  const otherGenerationAvailableMW = otherGenerationCapacityMW * (config.otherGenerationAvailabilityPercent ?? 0.85);
+  const purchasedPowerAvailableMW = purchasedPowerCapacityMW * (config.purchasedPowerAvailabilityPercent ?? 1.0);
+  const nuclearMW = nuclearAvailableMW;
+  const windMW = windAvailableMW;
+  const otherGenerationMW = otherGenerationAvailableMW;
+  const purchasedPowerMW = purchasedPowerAvailableMW;
 
   let batteryChargeMW = 0;
   let batteryDischargeMW = 0;
@@ -246,9 +260,16 @@ function calculateHour(
       rooftopSolarMW,
       utilitySolarMW: 0, // Utility solar not available in island mode
       totalSolarMW: rooftopSolarMW,
+      nuclearAvailableMW: 0,
       nuclearMW: hurricaneNuclearMW,
+      naturalGasAvailableMW: 0,
       naturalGasMW: gasMW,
+      windAvailableMW: 0,
       windMW: hurricaneWindMW,
+      otherGenerationAvailableMW: 0,
+      otherGenerationMW: 0,
+      purchasedPowerAvailableMW: 0,
+      purchasedPowerMW: 0,
       totalGenerationMW: rooftopSolarMW + hurricaneNuclearMW + gasMW + hurricaneWindMW,
       batteryChargeMW,
       batteryDischargeMW,
@@ -268,28 +289,20 @@ function calculateHour(
     // TRADITIONAL GRID MODE
     // Represents current-state operating model without VPP coordination
 
-    // Rooftop solar offsets behind-the-meter residential demand first
-    const netResidentialLoad = Math.max(0, residentialDemand - rooftopSolarMW);
-    gridExportMW = Math.max(0, rooftopSolarMW - residentialDemand);
+    const totalDemand = residentialDemand + config.aiLoadMW;
+    const nonGasSupply = rooftopSolarMW + utilitySolarMW + nuclearMW + windMW + otherGenerationMW + purchasedPowerMW;
 
-    // Utility-scale solar and must-run conventional generation contribute to grid supply
-    const utilityGeneration = utilitySolarMW + nuclearMW + windMW;
-
-    // Natural gas dispatches to meet residual demand up to available capacity
-    const residualBeforeGas = Math.max(0, netResidentialLoad + config.aiLoadMW - utilityGeneration);
-    gasMW = Math.min(availableGasMW, residualBeforeGas);
-
-    // Utility/grid supplies any remaining demand after all local generation and gas
-    netGridLoadMW = Math.max(0, residualBeforeGas - gasMW);
-
-    // Traditional mode: no coordinated battery dispatch
-    // Batteries may charge from excess rooftop solar if present (simplified)
-    if (gridExportMW > 0 && startingStorageMWh < totalUsableStorageMWh) {
-      // Constrain by both power and energy capacity
-      const maxChargeByPower = Math.min(gridExportMW, maxChargePowerMW);
+    if (nonGasSupply >= totalDemand) {
+      const surplus = nonGasSupply - totalDemand;
+      const maxChargeByPower = Math.min(surplus, maxChargePowerMW);
       const maxChargeByEnergy = (totalUsableStorageMWh - startingStorageMWh) / config.batteryChargingEfficiency;
       batteryChargeMW = Math.min(maxChargeByPower, maxChargeByEnergy);
-      gridExportMW -= batteryChargeMW;
+      gridExportMW = Math.max(0, surplus - batteryChargeMW);
+      netGridLoadMW = 0;
+    } else {
+      const residualBeforeGas = totalDemand - nonGasSupply;
+      gasMW = Math.min(naturalGasAvailableMW, residualBeforeGas);
+      netGridLoadMW = Math.max(0, residualBeforeGas - gasMW);
     }
 
   } else {
@@ -300,8 +313,9 @@ function calculateHour(
     const totalSolar = rooftopSolarMW + utilitySolarMW;
     const totalDemand = residentialDemand + config.aiLoadMW;
 
-    // Must-run generation (nuclear baseload + availability-driven wind) reduces demand first
-    const mustRunGeneration = nuclearMW + windMW;
+    // Illustrative priority: nuclear, variable renewables, other generation, and PPAs
+    // serve load before storage and dispatchable primarily-natural-gas generation.
+    const mustRunGeneration = nuclearMW + windMW + otherGenerationMW + purchasedPowerMW;
     const residualAfterMustRun = Math.max(0, totalDemand - totalSolar - mustRunGeneration);
 
     // Calculate SOC constraints
@@ -344,7 +358,7 @@ function calculateHour(
       }
       const residualAfterBattery = Math.max(0, deficit - batteryDischargeMW);
       // Natural gas dispatches to meet residual demand
-      gasMW = Math.min(availableGasMW, residualAfterBattery);
+      gasMW = Math.min(naturalGasAvailableMW, residualAfterBattery);
       netGridLoadMW = Math.max(0, residualAfterBattery - gasMW);
       gridExportMW = 0;
     }
@@ -378,7 +392,7 @@ function calculateHour(
   // Calculate DER contributions for metrics
   const batteryDispatchMW = batteryDischargeMW;
   const solarContributionMW = rooftopSolarMW + utilitySolarMW;
-  const conventionalContributionMW = nuclearMW + gasMW + windMW;
+  const conventionalContributionMW = nuclearMW + gasMW + windMW + otherGenerationMW;
   const totalGenerationMW = solarContributionMW + conventionalContributionMW;
 
   // Energy balance sanity check used for verification, not stored separately
@@ -393,9 +407,16 @@ function calculateHour(
     rooftopSolarMW,
     utilitySolarMW,
     totalSolarMW: rooftopSolarMW + utilitySolarMW,
+    nuclearAvailableMW,
     nuclearMW,
+    naturalGasAvailableMW,
     naturalGasMW: gasMW,
+    windAvailableMW,
     windMW,
+    otherGenerationAvailableMW,
+    otherGenerationMW,
+    purchasedPowerAvailableMW,
+    purchasedPowerMW,
     totalGenerationMW,
     batteryChargeMW,
     batteryDischargeMW,
