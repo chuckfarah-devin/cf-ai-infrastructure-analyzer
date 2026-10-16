@@ -54,8 +54,8 @@ function formatMW(value: number): string {
 }
 
 function lineWidthMW(value: number, max: number): number {
-  if (max <= 0) return 1;
-  return Math.max(1, Math.min(3.5, 1 + (value / max) * 2.5));
+  if (max <= 0) return 2;
+  return Math.max(2, Math.min(3, 2 + (value / max) * 1));
 }
 
 function curvedPath(x1: number, y1: number, x2: number, y2: number): string {
@@ -126,33 +126,39 @@ export function EnergyFlow({ config, hours }: EnergyFlowProps) {
     hour.batteryDischargeMW
   );
 
-  const gridX = 50;
-  const gridY = 38;
-  const sourceX = 32;
-  const demandX = 68;
+  // Connector geometry: 3-column grid is ~41% | 18% | 41%.
+  // Source cards are 72% of left column, left-aligned → right edge ≈ 30%.
+  // Consumer cards are 72% of right column, right-aligned → left edge ≈ 70%.
+  // Hub circle center at 50%, radius ~8% → edges at ~42% and ~58%.
+  const gridCenterX = 50;
+  const gridY = 40;
+  const sourceEdgeX = 30;      // right edge of narrowed source cards
+  const hubLeftX = 42;         // left edge of hub circle
+  const hubRightX = 58;        // right edge of hub circle
+  const demandEdgeX = 70;      // left edge of narrowed consumer cards
   const storageY = 98;
 
   const sourceYs = generationRows.map((_, i) =>
-    generationRows.length === 1 ? 30 : 18 + (i * (gridY - 12) / Math.max(1, generationRows.length - 1))
+    generationRows.length === 1 ? gridY : 16 + (i * (gridY + 6) / Math.max(1, generationRows.length - 1))
   );
 
   const demandYs = demandRows.map((_, i) =>
-    demandRows.length === 1 ? 30 : 18 + (i * (gridY - 12) / Math.max(1, demandRows.length - 1))
+    demandRows.length === 1 ? gridY : 16 + (i * (gridY + 6) / Math.max(1, demandRows.length - 1))
   );
 
   const sourceConnectors = generationRows.map((row, i) => ({
-    x1: sourceX,
+    x1: sourceEdgeX,
     y1: sourceYs[i],
-    x2: gridX,
+    x2: hubLeftX,
     y2: gridY,
     value: row.value,
     color: resourceConfig[row.key].color
   }));
 
   const demandConnectors = demandRows.map((row, i) => ({
-    x1: gridX,
+    x1: hubRightX,
     y1: gridY,
-    x2: demandX,
+    x2: demandEdgeX,
     y2: demandYs[i],
     value: row.value,
     color: demandConfig[row.key].color
@@ -161,9 +167,9 @@ export function EnergyFlow({ config, hours }: EnergyFlowProps) {
   const storageConnectors = [] as { x1: number; y1: number; x2: number; y2: number; value: number; color: string }[];
   if (hour.batteryChargeMW > 0) {
     storageConnectors.push({
-      x1: gridX,
-      y1: gridY,
-      x2: gridX - 12,
+      x1: gridCenterX,
+      y1: gridY + 14,
+      x2: gridCenterX - 10,
       y2: storageY,
       value: hour.batteryChargeMW,
       color: '#f59e0b'
@@ -171,10 +177,10 @@ export function EnergyFlow({ config, hours }: EnergyFlowProps) {
   }
   if (hour.batteryDischargeMW > 0) {
     storageConnectors.push({
-      x1: gridX - 12,
+      x1: gridCenterX - 10,
       y1: storageY,
-      x2: gridX,
-      y2: gridY,
+      x2: gridCenterX,
+      y2: gridY + 14,
       value: hour.batteryDischargeMW,
       color: '#22c55e'
     });
@@ -220,35 +226,64 @@ export function EnergyFlow({ config, hours }: EnergyFlowProps) {
           preserveAspectRatio="none"
           aria-hidden="true"
         >
-          {sourceConnectors.map((c, i) => (
-            <path
-              key={`source-${i}`}
-              className="flow-path"
-              d={curvedPath(c.x1, c.y1, c.x2, c.y2)}
-              stroke={c.color}
-              strokeWidth={lineWidthMW(c.value, maxFlowMW)}
-            />
-          ))}
+          <defs>
+            {/* Small arrowheads, one per unique connector color */}
+            {[...sourceConnectors, ...demandConnectors, ...storageConnectors].map((c, i) => (
+              <marker
+                key={`arrow-${i}`}
+                id={`arrow-${i}`}
+                markerWidth="6"
+                markerHeight="4"
+                refX="5"
+                refY="2"
+                orient="auto"
+                markerUnits="strokeWidth"
+              >
+                <polygon points="0,0 6,2 0,4" fill={c.color} opacity="0.8" />
+              </marker>
+            ))}
+          </defs>
+          {sourceConnectors.map((c, i) => {
+            const idx = i;
+            return (
+              <path
+                key={`source-${i}`}
+                className="flow-path"
+                d={curvedPath(c.x1, c.y1, c.x2, c.y2)}
+                stroke={c.color}
+                strokeWidth={lineWidthMW(c.value, maxFlowMW)}
+                markerEnd={`url(#arrow-${idx})`}
+              />
+            );
+          })}
 
-          {demandConnectors.map((c, i) => (
-            <path
-              key={`demand-${i}`}
-              className="flow-path"
-              d={curvedPath(c.x1, c.y1, c.x2, c.y2)}
-              stroke={c.color}
-              strokeWidth={lineWidthMW(c.value, maxFlowMW)}
-            />
-          ))}
+          {demandConnectors.map((c, i) => {
+            const idx = sourceConnectors.length + i;
+            return (
+              <path
+                key={`demand-${i}`}
+                className="flow-path"
+                d={curvedPath(c.x1, c.y1, c.x2, c.y2)}
+                stroke={c.color}
+                strokeWidth={lineWidthMW(c.value, maxFlowMW)}
+                markerEnd={`url(#arrow-${idx})`}
+              />
+            );
+          })}
 
-          {storageConnectors.map((c, i) => (
-            <path
-              key={`storage-${i}`}
-              className="flow-path"
-              d={curvedPath(c.x1, c.y1, c.x2, c.y2)}
-              stroke={c.color}
-              strokeWidth={lineWidthMW(c.value, maxFlowMW)}
-            />
-          ))}
+          {storageConnectors.map((c, i) => {
+            const idx = sourceConnectors.length + demandConnectors.length + i;
+            return (
+              <path
+                key={`storage-${i}`}
+                className="flow-path"
+                d={curvedPath(c.x1, c.y1, c.x2, c.y2)}
+                stroke={c.color}
+                strokeWidth={lineWidthMW(c.value, maxFlowMW)}
+                markerEnd={`url(#arrow-${idx})`}
+              />
+            );
+          })}
         </svg>
 
         {/* Generation sources (left) */}
@@ -282,9 +317,12 @@ export function EnergyFlow({ config, hours }: EnergyFlowProps) {
             <div className="flow-grid-icon">
               <Activity size={36} />
             </div>
-            <div className="flow-grid-label">Florida Power Grid</div>
+            <div className="flow-grid-label">System Demand</div>
             <div className="flow-grid-load">{formatMW(hour.totalDemandMW + hour.batteryChargeMW)}</div>
-            <div className="flow-grid-sub">System Demand incl. Storage Charging</div>
+            <div className="flow-grid-sub">at {selectedHour}:00</div>
+          </div>
+          <div className="flow-grid-charging-note">
+            Includes {formatMW(hour.batteryChargeMW)} storage charging
           </div>
         </div>
 
