@@ -1,25 +1,29 @@
-import { useMemo, useState } from 'react';
+/**
+ * V2 Energy Flow visualization with Florida outline hub,
+ * animated flow paths, and particle animation.
+ *
+ * Layout: generation cards (left) → Florida hub (center) → consumer cards (right)
+ * Storage rail below the hub.
+ *
+ * Connector paths are positioned using DOM ref measurements so they
+ * visually connect to the actual rendered Florida map edges and card edges,
+ * regardless of layout/font/zoom differences.
+ */
+
+import { useMemo, useRef, useState, useEffect, useCallback } from 'react';
 import {
-  Sun,
-  Home,
-  Atom,
-  Flame,
-  Wind,
-  Battery,
-  Car,
-  Server,
-  ArrowRight,
-  ArrowLeft,
-  Activity,
-  Factory,
-  Cable
+  Sun, Home, Atom, Flame, Wind, Battery, Car, Server,
+  ArrowRight, ArrowLeft, Factory, Cable
 } from 'lucide-react';
 import type { ScenarioConfig, HourResult } from '../simulation/types';
 import { FPL_PUBLIC_BASELINE_DATE, FPL_SCALE_FACTOR } from '../data/fplPublicBaseline';
+import { FloridaHub } from './FloridaHub';
 
 interface EnergyFlowProps {
   config: ScenarioConfig;
   hours: HourResult[];
+  selectedHour: number;
+  onHourChange: (hour: number) => void;
 }
 
 const resourceConfig: Record<
@@ -53,29 +57,33 @@ function formatMW(value: number): string {
   return `${Math.round(value).toLocaleString()} MW`;
 }
 
-function lineWidthMW(value: number, max: number): number {
+function lineWidthPx(value: number, max: number): number {
   if (max <= 0) return 2;
-  return Math.max(2, Math.min(3, 2 + (value / max) * 1));
+  return Math.max(2, Math.min(3.5, 2 + (value / max) * 1.5));
 }
 
-function curvedPath(x1: number, y1: number, x2: number, y2: number): string {
-  const bend = Math.abs(x2 - x1) * 0.55;
+function curvedPathPx(x1: number, y1: number, x2: number, y2: number): string {
+  const bend = Math.abs(x2 - x1) * 0.45;
   return `M ${x1} ${y1} C ${x1 + bend} ${y1}, ${x2 - bend} ${y2}, ${x2} ${y2}`;
 }
 
-export function EnergyFlow({ config, hours }: EnergyFlowProps) {
-  const [selectedHour, setSelectedHour] = useState<number>(() => {
-    let peakHour = 0;
-    let peakDemand = 0;
-    hours.forEach((h, i) => {
-      if (h.totalDemandMW > peakDemand) {
-        peakDemand = h.totalDemandMW;
-        peakHour = i;
-      }
-    });
-    return peakHour;
-  });
+/** Measure an element's center-Y and right/left edge relative to a container */
+function relativePos(el: HTMLElement, container: HTMLElement) {
+  const elRect = el.getBoundingClientRect();
+  const cRect = container.getBoundingClientRect();
+  return {
+    cx: elRect.left + elRect.width / 2 - cRect.left,
+    cy: elRect.top + elRect.height / 2 - cRect.top,
+    left: elRect.left - cRect.left,
+    right: elRect.right - cRect.left,
+    top: elRect.top - cRect.top,
+    bottom: elRect.bottom - cRect.top,
+    width: elRect.width,
+    height: elRect.height,
+  };
+}
 
+export function EnergyFlow({ config, hours, selectedHour, onHourChange }: EnergyFlowProps) {
   const hour = hours[selectedHour];
   if (!hour) return null;
 
@@ -123,68 +131,150 @@ export function EnergyFlow({ config, hours }: EnergyFlowProps) {
     ...generationRows.map(r => r.value),
     ...demandRows.map(r => r.value),
     hour.batteryChargeMW,
-    hour.batteryDischargeMW
+    hour.batteryDischargeMW,
+    1
   );
 
-  // Connector geometry: 3-column grid is ~41% | 18% | 41%.
-  // Source cards are 72% of left column, left-aligned → right edge ≈ 30%.
-  // Consumer cards are 72% of right column, right-aligned → left edge ≈ 70%.
-  // Hub circle center at 50%, radius ~8% → edges at ~42% and ~58%.
-  const gridCenterX = 50;
-  const gridY = 40;
-  const sourceEdgeX = 30;      // right edge of narrowed source cards
-  const hubLeftX = 42;         // left edge of hub circle
-  const hubRightX = 58;        // right edge of hub circle
-  const demandEdgeX = 70;      // left edge of narrowed consumer cards
-  const storageY = 98;
+  // ── Refs for DOM measurement ──────────────────────────────
+  const diagramRef = useRef<HTMLDivElement>(null);
+  const sourceRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const demandRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const mapSvgRef = useRef<SVGSVGElement>(null);
+  const storageRailRef = useRef<HTMLDivElement>(null);
 
-  const sourceYs = generationRows.map((_, i) =>
-    generationRows.length === 1 ? gridY : 16 + (i * (gridY + 6) / Math.max(1, generationRows.length - 1))
-  );
+  // Connector state — pixel-based paths computed from DOM measurements
+  const [connectors, setConnectors] = useState<
+    { d: string; color: string; width: number; id: string }[]
+  >([]);
+  const [junctions, setJunctions] = useState<{ x: number; y: number }[]>([]);
+  const [svgSize, setSvgSize] = useState({ w: 0, h: 0 });
 
-  const demandYs = demandRows.map((_, i) =>
-    demandRows.length === 1 ? gridY : 16 + (i * (gridY + 6) / Math.max(1, demandRows.length - 1))
-  );
+  // Stable key for connector recomputation — avoids array-reference churn
+  const genKeys = generationRows.map(r => r.key + ':' + Math.round(r.value)).join(',');
+  const demKeys = demandRows.map(r => r.key + ':' + Math.round(r.value)).join(',');
+  const chargeMW = hour.batteryChargeMW;
+  const dischargeMW = hour.batteryDischargeMW;
 
-  const sourceConnectors = generationRows.map((row, i) => ({
-    x1: sourceEdgeX,
-    y1: sourceYs[i],
-    x2: hubLeftX,
-    y2: gridY,
-    value: row.value,
-    color: resourceConfig[row.key].color
-  }));
+  const computeConnectors = useCallback(() => {
+    const diagram = diagramRef.current;
+    const mapSvg = mapSvgRef.current;
+    if (!diagram || !mapSvg) return;
 
-  const demandConnectors = demandRows.map((row, i) => ({
-    x1: hubRightX,
-    y1: gridY,
-    x2: demandEdgeX,
-    y2: demandYs[i],
-    value: row.value,
-    color: demandConfig[row.key].color
-  }));
+    const dRect = diagram.getBoundingClientRect();
+    if (dRect.width === 0 || dRect.height === 0) return;
+    const mPos = relativePos(mapSvg as unknown as HTMLElement, diagram);
 
-  const storageConnectors = [] as { x1: number; y1: number; x2: number; y2: number; value: number; color: string }[];
-  if (hour.batteryChargeMW > 0) {
-    storageConnectors.push({
-      x1: gridCenterX,
-      y1: gridY + 14,
-      x2: gridCenterX - 10,
-      y2: storageY,
-      value: hour.batteryChargeMW,
-      color: '#f59e0b'
+    // Florida map bounding box within the SVG (viewBox 0 0 400 386)
+    const viewBoxW = 400;
+    const viewBoxH = 386;
+    const mapAR = viewBoxW / viewBoxH;
+    const elAR = mPos.width / mPos.height;
+
+    let geoOffX = 0, geoOffY = 0, geoScale = 1;
+    if (elAR > mapAR) {
+      geoScale = mPos.height / viewBoxH;
+      geoOffX = (mPos.width - viewBoxW * geoScale) / 2;
+    } else {
+      geoScale = mPos.width / viewBoxW;
+      geoOffY = (mPos.height - viewBoxH * geoScale) / 2;
+    }
+
+    const geoToPx = (vx: number, vy: number) => ({
+      x: mPos.left + geoOffX + vx * geoScale,
+      y: mPos.top + geoOffY + vy * geoScale,
     });
-  }
-  if (hour.batteryDischargeMW > 0) {
-    storageConnectors.push({
-      x1: gridCenterX - 10,
-      y1: storageY,
-      x2: gridCenterX,
-      y2: gridY + 14,
-      value: hour.batteryDischargeMW,
-      color: '#22c55e'
+
+    // Junction points on the Florida map boundary
+    // West coast (Tampa Bay area, ~viewBox x=250, y=160)
+    const westJunction = geoToPx(230, 145);
+    // East coast (Space Coast area, ~viewBox x=345, y=120)
+    const eastJunction = geoToPx(345, 120);
+
+    const newConnectors: { d: string; color: string; width: number; id: string }[] = [];
+    const newJunctions: { x: number; y: number }[] = [];
+    let idx = 0;
+
+    // Source cards → west coast junction
+    sourceRefs.current.forEach((el, i) => {
+      if (!el || i >= generationRows.length) return;
+      const pos = relativePos(el, diagram);
+      const row = generationRows[i];
+      newConnectors.push({
+        d: curvedPathPx(pos.right, pos.cy, westJunction.x, westJunction.y),
+        color: resourceConfig[row.key].color,
+        width: lineWidthPx(row.value, maxFlowMW),
+        id: `conn-${idx++}`,
+      });
     });
-  }
+    newJunctions.push(westJunction);
+
+    // East coast junction → demand cards
+    demandRefs.current.forEach((el, i) => {
+      if (!el || i >= demandRows.length) return;
+      const pos = relativePos(el, diagram);
+      const row = demandRows[i];
+      newConnectors.push({
+        d: curvedPathPx(eastJunction.x, eastJunction.y, pos.left, pos.cy),
+        color: demandConfig[row.key].color,
+        width: lineWidthPx(row.value, maxFlowMW),
+        id: `conn-${idx++}`,
+      });
+    });
+    newJunctions.push(eastJunction);
+
+    // Storage connectors — route from BELOW the info panel to the storage rail
+    // Use the bottom of the flow-center column (below the info panel and legend)
+    // instead of the tip of the peninsula, to avoid crossing the panel text.
+    const storageRail = storageRailRef.current;
+    if (storageRail) {
+      const sPos = relativePos(storageRail, diagram);
+      const storageTargetY = sPos.top;
+      const storageTargetX = sPos.cx;
+
+      // Start point: center-bottom of the Florida hub column, below the info panel
+      // Find the flow-center element
+      const flowCenter = diagram.querySelector('.flow-center') as HTMLElement | null;
+      const hubBottom = flowCenter
+        ? relativePos(flowCenter, diagram).bottom
+        : mPos.bottom + 60;
+      const hubCenterX = mPos.left + mPos.width / 2;
+
+      if (chargeMW > 0) {
+        newConnectors.push({
+          d: curvedPathPx(hubCenterX - 10, hubBottom, storageTargetX - 20, storageTargetY),
+          color: '#f59e0b',
+          width: lineWidthPx(chargeMW, maxFlowMW),
+          id: `conn-${idx++}`,
+        });
+      }
+      if (dischargeMW > 0) {
+        newConnectors.push({
+          d: curvedPathPx(storageTargetX + 20, storageTargetY, hubCenterX + 10, hubBottom),
+          color: '#22c55e',
+          width: lineWidthPx(dischargeMW, maxFlowMW),
+          id: `conn-${idx++}`,
+        });
+      }
+    }
+
+    setConnectors(newConnectors);
+    setJunctions(newJunctions);
+    setSvgSize({ w: dRect.width, h: dRect.height });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [genKeys, demKeys, chargeMW, dischargeMW, maxFlowMW]);
+
+  // Recompute on data change and on resize
+  useEffect(() => {
+    computeConnectors();
+    window.addEventListener('resize', computeConnectors);
+    return () => window.removeEventListener('resize', computeConnectors);
+  }, [computeConnectors]);
+
+  // Recompute after a short delay to catch layout shifts
+  useEffect(() => {
+    const t = setTimeout(computeConnectors, 150);
+    return () => clearTimeout(t);
+  }, [computeConnectors, selectedHour]);
 
   const imports = Math.max(0, hour.netGridLoadMW);
   const exports = hour.gridExportMW;
@@ -192,190 +282,185 @@ export function EnergyFlow({ config, hours }: EnergyFlowProps) {
     hour.totalGenerationMW + hour.purchasedPowerMW + hour.batteryDischargeMW + imports -
     (hour.totalDemandMW + hour.batteryChargeMW + exports + hour.curtailedGenerationMW);
 
+  const presetLabel = config.presetId === 'fpl-public' ? 'FPL Public Portfolio' : 'Illustrative Model';
+
   return (
-    <div className="energy-flow">
+    <div className="energy-flow v2">
       <div className="energy-flow-header">
         <div>
-          <h2>{config.presetId === 'fpl-public' ? 'Public FPL Portfolio — Scaled Illustrative Dispatch' : 'Florida Energy Flow'}</h2>
+          <h2>
+            {config.presetId === 'fpl-public'
+              ? 'Florida Energy Flow \u2014 From Generation to AI Infrastructure'
+              : 'Florida Energy Flow \u2014 From Generation to AI Infrastructure'}
+          </h2>
           {config.presetId === 'fpl-public' && (
             <p className="energy-flow-disclaimer">
-              Public capacities as of {FPL_PUBLIC_BASELINE_DATE}, scaled uniformly to {(FPL_SCALE_FACTOR * 100).toFixed(2)}%. Primarily Natural Gas includes dual-fuel capability. Illustrative priority dispatch does not reproduce FPL load, reserves, transmission constraints, or actual operations.
+              Public capacities as of {FPL_PUBLIC_BASELINE_DATE}, scaled to {(FPL_SCALE_FACTOR * 100).toFixed(2)}%. Illustrative dispatch only.
             </p>
           )}
         </div>
         <div className="hour-selector">
           <label>
-            Hour:
+            Time of Day:
             <input
               type="range"
               min="0"
               max="23"
               value={selectedHour}
-              onChange={(e) => setSelectedHour(parseInt(e.target.value, 10))}
+              onChange={(e) => onHourChange(parseInt(e.target.value, 10))}
             />
-            <span>{selectedHour}:00</span>
+            <span className="hour-display">{selectedHour}:00</span>
           </label>
         </div>
       </div>
 
-      <div className="energy-flow-diagram">
-        {/* SVG connector overlay */}
-        <svg
-          className="flow-connectors"
-          viewBox="0 0 100 100"
-          preserveAspectRatio="none"
-          aria-hidden="true"
-        >
-          <defs>
-            {/* Small arrowheads, one per unique connector color */}
-            {[...sourceConnectors, ...demandConnectors, ...storageConnectors].map((c, i) => (
-              <marker
-                key={`arrow-${i}`}
-                id={`arrow-${i}`}
-                markerWidth="6"
-                markerHeight="4"
-                refX="5"
-                refY="2"
-                orient="auto"
-                markerUnits="strokeWidth"
-              >
-                <polygon points="0,0 6,2 0,4" fill={c.color} opacity="0.8" />
-              </marker>
+      <div className="energy-flow-body" ref={diagramRef}>
+        {/* SVG connector overlay — pixel-based, measured from DOM */}
+        {svgSize.w > 0 && (
+          <svg
+            className="flow-connectors"
+            viewBox={`0 0 ${svgSize.w} ${svgSize.h}`}
+            preserveAspectRatio="xMidYMid meet"
+            aria-hidden="true"
+          >
+            <defs>
+              {connectors.map((c) => (
+                <marker
+                  key={`arrow-${c.id}`}
+                  id={`arrow-${c.id}`}
+                  markerWidth="8"
+                  markerHeight="6"
+                  refX="7"
+                  refY="3"
+                  orient="auto"
+                  markerUnits="strokeWidth"
+                >
+                  <polygon points="0,0.5 8,3 0,5.5" fill={c.color} opacity="0.8" />
+                </marker>
+              ))}
+            </defs>
+
+            {connectors.map((c) => (
+              <g key={c.id}>
+                <path
+                  className="flow-path"
+                  d={c.d}
+                  stroke={c.color}
+                  strokeWidth={c.width}
+                  markerEnd={`url(#arrow-${c.id})`}
+                />
+                <circle r="3" fill={c.color} opacity="0.85" className="flow-particle">
+                  <animateMotion dur="2.5s" repeatCount="indefinite" path={c.d} />
+                </circle>
+              </g>
             ))}
-          </defs>
-          {sourceConnectors.map((c, i) => {
-            const idx = i;
-            return (
-              <path
-                key={`source-${i}`}
-                className="flow-path"
-                d={curvedPath(c.x1, c.y1, c.x2, c.y2)}
-                stroke={c.color}
-                strokeWidth={lineWidthMW(c.value, maxFlowMW)}
-                markerEnd={`url(#arrow-${idx})`}
-              />
-            );
-          })}
 
-          {demandConnectors.map((c, i) => {
-            const idx = sourceConnectors.length + i;
-            return (
-              <path
-                key={`demand-${i}`}
-                className="flow-path"
-                d={curvedPath(c.x1, c.y1, c.x2, c.y2)}
-                stroke={c.color}
-                strokeWidth={lineWidthMW(c.value, maxFlowMW)}
-                markerEnd={`url(#arrow-${idx})`}
-              />
-            );
-          })}
+            {/* Junction dots on the Florida map */}
+            {junctions.map((j, i) => (
+              <circle key={`jct-${i}`} cx={j.x} cy={j.y} r="4" fill="#4a5ea8" opacity="0.6" className="junction-dot" />
+            ))}
+          </svg>
+        )}
 
-          {storageConnectors.map((c, i) => {
-            const idx = sourceConnectors.length + demandConnectors.length + i;
-            return (
-              <path
-                key={`storage-${i}`}
-                className="flow-path"
-                d={curvedPath(c.x1, c.y1, c.x2, c.y2)}
-                stroke={c.color}
-                strokeWidth={lineWidthMW(c.value, maxFlowMW)}
-                markerEnd={`url(#arrow-${idx})`}
-              />
-            );
-          })}
-        </svg>
-
-        {/* Generation sources (left) */}
-        <div className="flow-column flow-sources">
-          <h3>Generation Sources</h3>
-          {generationRows.map(row => {
-            const cfg = resourceConfig[row.key];
-            const Icon = cfg.icon;
-            return (
-              <div key={row.key} className="flow-node flow-source-node" style={{ borderColor: cfg.color }}>
-                <div className="flow-node-icon" style={{ color: cfg.color }}>
-                  <Icon size={22} />
+        {/* 3-column grid: sources | Florida hub | consumers */}
+        <div className="energy-flow-diagram v2-diagram">
+          {/* Generation sources (left column) */}
+          <div className="flow-column flow-sources">
+            <h3>Generation Sources</h3>
+            {generationRows.map((row, i) => {
+              const cfg = resourceConfig[row.key];
+              const Icon = cfg.icon;
+              return (
+                <div
+                  key={row.key}
+                  ref={(el) => { sourceRefs.current[i] = el; }}
+                  className="flow-node flow-source-node"
+                  style={{ borderColor: cfg.color }}
+                >
+                  <div className="flow-node-icon" style={{ color: cfg.color }}>
+                    <Icon size={20} />
+                  </div>
+                  <div className="flow-node-body">
+                    <div className="flow-node-label">{cfg.label}</div>
+                    <div className="flow-node-value">{formatMW(row.value)}</div>
+                    {row.installed !== null && row.installed > 0 && (
+                      <div className="flow-node-capacity">
+                        Avail {formatMW(row.available ?? 0)} of {formatMW(row.installed)}
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div className="flow-node-body">
-                  <div className="flow-node-label">{cfg.label}</div>
-                  <div className="flow-node-value">{formatMW(row.value)}</div>
-                  {row.installed !== null && row.installed > 0 && (
-                    <div className="flow-node-capacity">
-                      installed {formatMW(row.installed)} · available {formatMW(row.available ?? 0)}
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Center grid hub */}
-        <div className="flow-center">
-          <div className="flow-grid-hub">
-            <div className="flow-grid-icon">
-              <Activity size={36} />
-            </div>
-            <div className="flow-grid-label">System Demand</div>
-            <div className="flow-grid-load">{formatMW(hour.totalDemandMW + hour.batteryChargeMW)}</div>
-            <div className="flow-grid-sub">at {selectedHour}:00</div>
+              );
+            })}
           </div>
-          <div className="flow-grid-charging-note">
-            Includes {formatMW(hour.batteryChargeMW)} storage charging
+
+          {/* Florida Hub (center) */}
+          <div className="flow-center">
+            <FloridaHub
+              totalLoadMW={hour.totalDemandMW}
+              batteryChargeMW={hour.batteryChargeMW}
+              selectedHour={selectedHour}
+              presetLabel={presetLabel}
+              mapSvgRef={mapSvgRef}
+            />
+          </div>
+
+          {/* Consumers (right column) */}
+          <div className="flow-column flow-demands">
+            <h3>Consumers</h3>
+            {demandRows.map((row, i) => {
+              const cfg = demandConfig[row.key];
+              const Icon = cfg.icon;
+              return (
+                <div
+                  key={row.key}
+                  ref={(el) => { demandRefs.current[i] = el; }}
+                  className="flow-node flow-demand-node"
+                  style={{ borderColor: cfg.color }}
+                >
+                  <div className="flow-node-icon" style={{ color: cfg.color }}>
+                    <Icon size={20} />
+                  </div>
+                  <div className="flow-node-body">
+                    <div className="flow-node-label">{cfg.label}</div>
+                    <div className="flow-node-value">{formatMW(row.value)}</div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* Consumers (right) */}
-        <div className="flow-column flow-demands">
-          <h3>Consumers</h3>
-          {demandRows.map(row => {
-            const cfg = demandConfig[row.key];
-            const Icon = cfg.icon;
-            return (
-              <div key={row.key} className="flow-node flow-demand-node" style={{ borderColor: cfg.color }}>
-                <div className="flow-node-icon" style={{ color: cfg.color }}>
-                  <Icon size={22} />
-                </div>
-                <div className="flow-node-body">
-                  <div className="flow-node-label">{cfg.label}</div>
-                  <div className="flow-node-value">{formatMW(row.value)}</div>
-                </div>
+        {/* Storage rail */}
+        <div className="flow-storage-rail" ref={storageRailRef}>
+          <h4>Storage Resources</h4>
+          <div className="flow-storage-row">
+            {(config.utilityBatteryPowerMW ?? 0) > 0 && (
+              <div className="flow-storage-node" style={{ borderColor: storageConfig.utilityBattery.color }}>
+                <Battery size={18} />
+                <span>{storageConfig.utilityBattery.label}</span>
+                <strong>{formatMW(utilityDischargeMW)} / {formatMW(utilityChargeMW)}</strong>
+                <small>Discharge / Charge</small>
               </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Storage rail (bottom row) */}
-      <div className="flow-storage-rail">
-        <h4>Storage Resources</h4>
-        <div className="flow-storage-row">
-          {(config.utilityBatteryPowerMW ?? 0) > 0 && (
-            <div className="flow-storage-node" style={{ borderColor: storageConfig.utilityBattery.color }}>
-              <Battery size={20} />
-              <span>{storageConfig.utilityBattery.label}</span>
-              <strong>{formatMW(utilityDischargeMW)} / {formatMW(utilityChargeMW)}</strong>
+            )}
+            <div className="flow-storage-node" style={{ borderColor: storageConfig.residentialBattery.color }}>
+              <Home size={18} />
+              <span>{storageConfig.residentialBattery.label}</span>
+              <strong>{formatMW(homeDischargeMW)} / {formatMW(homeChargeMW)}</strong>
               <small>Discharge / Charge</small>
             </div>
-          )}
-          <div className="flow-storage-node" style={{ borderColor: storageConfig.residentialBattery.color }}>
-            <Home size={20} />
-            <span>{storageConfig.residentialBattery.label}</span>
-            <strong>{formatMW(homeDischargeMW)} / {formatMW(homeChargeMW)}</strong>
-            <small>Discharge / Charge</small>
-          </div>
-          <div className="flow-storage-node" style={{ borderColor: storageConfig.evBattery.color }}>
-            <Car size={20} />
-            <span>{storageConfig.evBattery.label}</span>
-            <strong>{formatMW(evDischargeMW)} / {formatMW(evChargeMW)}</strong>
-            <small>Discharge / Charge</small>
+            <div className="flow-storage-node" style={{ borderColor: storageConfig.evBattery.color }}>
+              <Car size={18} />
+              <span>{storageConfig.evBattery.label}</span>
+              <strong>{formatMW(evDischargeMW)} / {formatMW(evChargeMW)}</strong>
+              <small>Discharge / Charge</small>
+            </div>
           </div>
         </div>
       </div>
 
       <div className="energy-flow-footer">
-        <span>Balance check: {Math.abs(energyBalance) < 0.01 ? '✓' : `Δ ${energyBalance.toFixed(2)} MW`}</span>
+        <span>Balance: {Math.abs(energyBalance) < 0.01 ? '\u2713 Balanced' : `\u0394 ${energyBalance.toFixed(2)} MW`}</span>
         <span>Imports: {formatMW(imports)}</span>
         <span>Exports: {formatMW(exports)}</span>
         <span>Curtailment: {formatMW(hour.curtailedGenerationMW)}</span>
