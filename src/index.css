@@ -1755,6 +1755,150 @@ code {
 .tradeoff-investigation { background: #eff6ff; }
 .tradeoff-investigation strong { color: #1e40af; }
 
+/* ── Community & Environmental Overview ────────────────────── */
+
+.community-overview {
+  margin-bottom: 1.25rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1rem;
+  background: linear-gradient(180deg, #f8fafc 0%, white 100%);
+}
+
+.community-overview-header {
+  margin-bottom: 0.85rem;
+}
+.community-overview-header h4 {
+  margin: 0 0 0.15rem;
+  font-size: 0.95rem;
+  color: #1e293b;
+}
+.community-overview-subtitle {
+  margin: 0 0 0.5rem;
+  font-size: 0.72rem;
+  color: #64748b;
+  font-style: italic;
+}
+.overview-status-legend {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.68rem;
+  color: #64748b;
+}
+.overview-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.community-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.overview-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+}
+.overview-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+.overview-card-header h5 {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.overview-card-items {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.overview-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  color: #334155;
+  line-height: 1.45;
+}
+.overview-item .overview-status {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.overview-item-documented { }
+.overview-item-possible { color: #475569; }
+.overview-item-unknown { color: #64748b; font-style: italic; }
+
+.overview-status {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* ── Key Questions ────────────────────────────────────────── */
+.key-questions {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 6px;
+  padding: 0.75rem;
+}
+.key-questions-header {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.25rem;
+}
+.key-questions-header h5 {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #92400e;
+  font-weight: 600;
+}
+.key-questions-note {
+  margin: 0 0 0.5rem;
+  font-size: 0.68rem;
+  color: #a16207;
+  font-style: italic;
+}
+.key-questions-list {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.key-questions-list li {
+  font-size: 0.75rem;
+  color: #78350f;
+  line-height: 1.45;
+}
+.key-questions-list li::marker {
+  color: #d97706;
+  font-weight: 600;
+}
+
+@media (max-width: 900px) {
+  .community-overview-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ── Confidence legend ────────────────────────────────────── */
 .confidence-legend {
   padding-top: 0.5rem;

@@ -10,7 +10,8 @@ import { useState } from 'react';
 import {
   Building2, AlertTriangle, CheckCircle, HelpCircle,
   Info, ExternalLink, ChevronDown, ChevronRight, Leaf, Users,
-  Droplets, Shield, Eye, Zap, TreePine
+  Droplets, Shield, Eye, Zap, TreePine, MessageSquare,
+  CircleDot, CircleDashed, CircleHelp
 } from 'lucide-react';
 import {
   FLORIDA_MAINLAND_PATH,
@@ -25,6 +26,8 @@ import {
   type AnnotatedFact,
   type ConfidenceLevel,
   type EnvironmentalTradeoff,
+  type CommunityEnvironmentalOverview,
+  type OverviewItem,
 } from '../data/siteExplorerData';
 
 // ── Confidence badge ─────────────────────────────────────────
@@ -125,6 +128,87 @@ function TradeoffCard({ tradeoff }: { tradeoff: EnvironmentalTradeoff }) {
   );
 }
 
+// ── Status indicator for overview items ──────────────────────
+function StatusIndicator({ status }: { status: OverviewItem['status'] }) {
+  const config = {
+    documented: { icon: CircleDot, label: 'Documented', color: '#16a34a' },
+    possible: { icon: CircleDashed, label: 'Possible', color: '#2563eb' },
+    unknown: { icon: CircleHelp, label: 'Unknown', color: '#94a3b8' },
+  }[status];
+  const Icon = config.icon;
+  return (
+    <span className="overview-status" style={{ color: config.color }} title={config.label}>
+      <Icon size={14} />
+    </span>
+  );
+}
+
+// ── Community & Environmental Overview ───────────────────────
+function CommunityOverview({ overview }: { overview: CommunityEnvironmentalOverview }) {
+  const cards: { key: string; title: string; icon: React.ElementType; iconColor: string; card: { items: OverviewItem[] } }[] = [
+    { key: 'land', title: 'Land & Habitat', icon: TreePine, iconColor: '#16a34a', card: overview.landHabitat },
+    { key: 'water', title: 'Water & Environmental Restoration', icon: Droplets, iconColor: '#2563eb', card: overview.waterEnvironment },
+    { key: 'neighborhood', title: 'Neighborhood Protection', icon: Shield, iconColor: '#7c3aed', card: overview.neighborhoodProtection },
+    { key: 'community', title: 'Community Benefits', icon: Users, iconColor: '#ea580c', card: overview.communityBenefits },
+  ];
+
+  return (
+    <div className="community-overview">
+      <div className="community-overview-header">
+        <h4>Community & Environmental Overview</h4>
+        <p className="community-overview-subtitle">
+          Brownfield-first, community-benefit infrastructure planning
+        </p>
+        <div className="overview-status-legend">
+          <span className="overview-legend-item">
+            <StatusIndicator status="documented" /> Documented
+          </span>
+          <span className="overview-legend-item">
+            <StatusIndicator status="possible" /> Possible
+          </span>
+          <span className="overview-legend-item">
+            <StatusIndicator status="unknown" /> Requires Investigation
+          </span>
+        </div>
+      </div>
+
+      <div className="community-overview-grid">
+        {cards.map(({ key, title, icon: CardIcon, iconColor, card }) => (
+          <div key={key} className="overview-card">
+            <div className="overview-card-header">
+              <CardIcon size={18} style={{ color: iconColor }} />
+              <h5>{title}</h5>
+            </div>
+            <ul className="overview-card-items">
+              {card.items.map((item, i) => (
+                <li key={i} className={`overview-item overview-item-${item.status}`}>
+                  <StatusIndicator status={item.status} />
+                  <span>{item.text}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+
+      <div className="key-questions">
+        <div className="key-questions-header">
+          <MessageSquare size={16} style={{ color: '#b45309' }} />
+          <h5>Key Questions Before Approval</h5>
+        </div>
+        <p className="key-questions-note">
+          Practical questions a county commissioner or planning board could ask a developer about this site.
+        </p>
+        <ol className="key-questions-list">
+          {overview.keyQuestionsBeforeApproval.map((q, i) => (
+            <li key={i}>{q}</li>
+          ))}
+        </ol>
+      </div>
+    </div>
+  );
+}
+
 // ── Classification badge ─────────────────────────────────────
 function ClassificationBadge({ site }: { site: CandidateSite }) {
   const colors = {
@@ -156,6 +240,9 @@ function SiteDetail({ site }: { site: CandidateSite }) {
       </div>
 
       <p className="site-detail-why">{site.whyIncluded}</p>
+
+      {/* Community & Environmental Overview */}
+      <CommunityOverview overview={site.communityOverview} />
 
       {/* Core profile */}
       <div className="site-detail-section">

@@ -44,6 +44,26 @@ export interface EnvironmentalTradeoff {
   confidence: ConfidenceLevel;
 }
 
+/** A single item in the Community & Environmental Overview cards. */
+export interface OverviewItem {
+  text: string;
+  status: 'documented' | 'possible' | 'unknown';
+}
+
+/** One of the four Community & Environmental Overview cards. */
+export interface OverviewCard {
+  items: OverviewItem[];
+}
+
+/** Community & Environmental Overview for one site. */
+export interface CommunityEnvironmentalOverview {
+  landHabitat: OverviewCard;
+  waterEnvironment: OverviewCard;
+  neighborhoodProtection: OverviewCard;
+  communityBenefits: OverviewCard;
+  keyQuestionsBeforeApproval: string[];
+}
+
 export interface CandidateSite {
   id: string;
   name: string;
@@ -67,7 +87,10 @@ export interface CandidateSite {
   keyUncertainties: string[];
   whyIncluded: string;
 
-  // Community & environmental tradeoffs
+  // Community & Environmental Overview (four-card structure)
+  communityOverview: CommunityEnvironmentalOverview;
+
+  // Community & environmental tradeoffs (detailed)
   tradeoffs: EnvironmentalTradeoff[];
 }
 
@@ -145,6 +168,49 @@ const stJohns: CandidateSite = {
     'Timeline and terms of JEA\'s RFP process for remaining acreage.',
   ],
   whyIncluded: 'Largest genuine redevelopment opportunity among retired Florida power plants. Active planning by JEA with both new generation and industrial reuse on the same 2,000-acre site. Demonstrates the complexity of mixed brownfield redevelopment.',
+
+  communityOverview: {
+    landHabitat: {
+      items: [
+        { text: 'Former 1,252 MW coal plant demolished — reuses previously developed industrial land rather than undisturbed habitat.', status: 'documented' },
+        { text: 'Site is adjacent to St. Johns River and coastal marshes; thoughtful design could maintain wildlife corridors along the river margin.', status: 'possible' },
+        { text: 'Native Florida landscaping (live oak, slash pine, sabal palm) could provide visual screening along Heckscher Drive and New Berlin Road.', status: 'possible' },
+        { text: 'Whether coal combustion residuals (ash) remain on-site and require remediation before development is not established from public records.', status: 'unknown' },
+      ],
+    },
+    waterEnvironment: {
+      items: [
+        { text: 'Modern stormwater systems on the redeveloped site would likely improve runoff quality compared to the former coal plant operations.', status: 'possible' },
+        { text: 'Coal combustion residual contamination and ash pond status require Phase I/II Environmental Site Assessment.', status: 'unknown' },
+        { text: 'Data center cooling requires significant water volumes; consumptive use permit from SJRWMD would be needed.', status: 'documented' },
+        { text: 'Reclaimed water availability for cooling has not been publicly evaluated.', status: 'unknown' },
+      ],
+    },
+    neighborhoodProtection: {
+      items: [
+        { text: 'Large industrial development could increase truck traffic on Heckscher Drive and New Berlin Road.', status: 'documented' },
+        { text: '24/7 data center operations generate continuous noise from cooling systems and backup generators.', status: 'documented' },
+        { text: 'A state-funded traffic impact study was proposed for the Gateway Commerce Center area.', status: 'documented' },
+        { text: 'Visual impact on residential areas to the west requires assessment and landscape screening plan.', status: 'unknown' },
+      ],
+    },
+    communityBenefits: {
+      items: [
+        { text: 'JEA has described the site as a "once in a generation" economic development opportunity for Jacksonville\'s Northside.', status: 'documented' },
+        { text: 'Potential for construction employment, permanent operations jobs, and increased local tax revenue.', status: 'possible' },
+        { text: 'JEA\'s Gateway Commerce Center RFP process could include enforceable community benefit commitments.', status: 'possible' },
+        { text: 'Specific job counts, tax revenue projections, and community benefit terms have not been published.', status: 'unknown' },
+      ],
+    },
+    keyQuestionsBeforeApproval: [
+      'What is the environmental condition of the former coal plant footprint? Has a Phase I/II ESA been completed?',
+      'How much grid interconnection capacity remains after the 675 MW gas plant is built?',
+      'What specific traffic mitigation measures will be required for Heckscher Drive and New Berlin Road?',
+      'What enforceable community benefit commitments (local hiring, noise limits, visual screening) will be included in the RFP?',
+      'How will water supply for data center cooling be sourced — municipal, reclaimed, or groundwater — and at what volume?',
+      'What native landscaping and habitat restoration requirements will be imposed as conditions of development approval?',
+    ],
+  },
 
   tradeoffs: [
     {
@@ -267,6 +333,50 @@ const desoto: CandidateSite = {
   ],
   whyIncluded: 'The only Florida site with an active, publicly documented data center redevelopment proposal on a former power plant. Real-world case study demonstrating both the opportunity and the community-compatibility challenges of brownfield-first AI infrastructure.',
 
+  communityOverview: {
+    landHabitat: {
+      items: [
+        { text: 'Initial 34-acre Phase 1 reuses the former gas plant footprint, avoiding new greenfield disturbance.', status: 'documented' },
+        { text: 'The 825+ acre expansion extends well beyond the original plant into agricultural land, diminishing the brownfield-first advantage.', status: 'documented' },
+        { text: '14% of the site contains wetlands and surface waters per county planning documents.', status: 'documented' },
+        { text: 'Wetland delineation and USFWS consultation for listed species have not been completed for the expansion area.', status: 'unknown' },
+      ],
+    },
+    waterEnvironment: {
+      items: [
+        { text: 'DCIP states they will use reclaimed wastewater and wells for cooling rather than municipal water supply.', status: 'documented' },
+        { text: 'DeSoto County has limited water infrastructure for a facility of this scale per county statements.', status: 'documented' },
+        { text: 'Disposal of used cooling water is unresolved per county public statements.', status: 'documented' },
+        { text: 'Consumptive use permit from SWFWMD has not been obtained.', status: 'unknown' },
+      ],
+    },
+    neighborhoodProtection: {
+      items: [
+        { text: 'Gas-fired reciprocating engines and data center cooling systems generate continuous noise.', status: 'documented' },
+        { text: 'On-site natural gas power generation will produce CO2, NOx, and other emissions. Suncoast Searchlight reported concerns about emissions scale.', status: 'documented' },
+        { text: 'DCIP has stated they will mitigate noise impacts, but specific measures have not been published.', status: 'documented' },
+        { text: 'Distance to nearest residences and ambient noise baseline have not been publicly assessed.', status: 'unknown' },
+      ],
+    },
+    communityBenefits: {
+      items: [
+        { text: 'DeSoto County estimates $30M+ annual tax revenue from the project.', status: 'documented' },
+        { text: 'DCIP cites 25 jobs in Phase 1 with growth potential — relatively few permanent jobs for the physical scale of the project.', status: 'documented' },
+        { text: 'DeSoto County has significant budget challenges that the tax revenue could help address.', status: 'documented' },
+        { text: 'Community benefit agreement terms and enforceable commitments have not been publicly documented.', status: 'unknown' },
+      ],
+    },
+    keyQuestionsBeforeApproval: [
+      'What specific water source, volume, and disposal plan has been permitted for data center cooling at each phase?',
+      'What are the projected CO2 and NOx emissions at full build-out, and how do they compare to existing county emissions?',
+      'Was the county moratorium on data center applications enacted, and what conditions were imposed?',
+      'What enforceable noise limits will apply, and what is the baseline ambient noise level at the nearest residences?',
+      'How will wetlands (14% of site) be protected during the 825-acre expansion?',
+      'What binding community benefit commitments (local hiring, tax guarantees, infrastructure improvements) will the county require?',
+      'Has an independent economic impact assessment been completed beyond the developer\'s own projections?',
+    ],
+  },
+
   tradeoffs: [
     {
       category: 'Brownfield reuse vs. expansion',
@@ -382,6 +492,46 @@ const indiantown: CandidateSite = {
   ],
   whyIncluded: 'Educational case study demonstrating a utility-led coal-to-solar transition on a brownfield site. Shows how the brownfield-first principle is already being applied in Florida by the site owner. Not presented as an available development opportunity.',
 
+  communityOverview: {
+    landHabitat: {
+      items: [
+        { text: 'FPL demolished the coal plant and is reusing the site for the Monarch Solar Energy Center — a direct brownfield-to-solar transition.', status: 'documented' },
+        { text: 'Portions of the former plant footprint not used for solar could potentially be restored to native Florida habitat.', status: 'possible' },
+        { text: 'If FPL pursues maximum solar build-out on available land, habitat restoration opportunities may be limited.', status: 'possible' },
+        { text: 'Site-specific ecological assessment of cleared land and NWI wetland status have not been published.', status: 'unknown' },
+      ],
+    },
+    waterEnvironment: {
+      items: [
+        { text: 'Solar energy centers do not require cooling water, eliminating one of coal generation\'s largest environmental impacts.', status: 'documented' },
+        { text: 'Coal combustion residual contamination status for the former plant footprint is unknown from public records.', status: 'unknown' },
+        { text: 'FL DEP cleanup records and CCR Rule compliance for the former coal facility should be evaluated.', status: 'unknown' },
+      ],
+    },
+    neighborhoodProtection: {
+      items: [
+        { text: 'Solar energy centers produce no combustion noise, emissions, or truck traffic — significant improvement over the former coal operations.', status: 'documented' },
+        { text: 'Visual character of the area changes from industrial power plant to low-profile solar arrays.', status: 'documented' },
+        { text: 'Adjacent to the active FPL Martin Power Plant (2,150 MW gas combined-cycle), which remains an industrial neighbor.', status: 'documented' },
+      ],
+    },
+    communityBenefits: {
+      items: [
+        { text: 'Solar energy center generates property tax revenue for Martin County.', status: 'documented' },
+        { text: 'FPL press materials describe Martin County as a "great success story" for coal-to-solar transition.', status: 'documented' },
+        { text: 'Solar facilities create fewer permanent local jobs than the former coal plant operations did.', status: 'documented' },
+        { text: 'Comparison of local tax revenue and employment before (coal) and after (solar) has not been independently published.', status: 'unknown' },
+      ],
+    },
+    keyQuestionsBeforeApproval: [
+      'What is the contamination status of the former coal plant footprint? Have coal combustion residuals been fully remediated?',
+      'How much additional solar or clean energy capacity could be sited on the remaining former plant acreage?',
+      'What is the net change in local tax revenue and employment from the coal-to-solar transition?',
+      'Are there opportunities for native habitat restoration on portions of the site not needed for solar arrays?',
+      'What long-term groundwater monitoring, if any, is required for the former coal plant area?',
+    ],
+  },
+
   tradeoffs: [
     {
       category: 'Coal-to-solar transition',
@@ -487,6 +637,52 @@ const escambia: CandidateSite = {
     'Restrictive covenants prohibit residential use, recreation, mining, and agriculture. Groundwater use is prohibited.',
   ],
   whyIncluded: 'The only non-power-plant site in the shortlist. Demonstrates the full brownfield lifecycle: contamination, 400+ household relocation, EPA Superfund cleanup, Ready for Reuse certification, and county-led redevelopment planning. Tests the Environmental Restoration & Community Compatibility framework with a site where remediation and community displacement are documented realities.',
+
+  communityOverview: {
+    landHabitat: {
+      items: [
+        { text: 'Redevelopment of a contaminated, vacant industrial site avoids any new greenfield disturbance.', status: 'documented' },
+        { text: 'EPA soil cleanup completed 2010. Ready for Reuse Determination issued 2013 for commercial/industrial use.', status: 'documented' },
+        { text: 'Native Florida landscaping could transform a blighted site into an attractive commerce park, improving the neighborhood aesthetic.', status: 'possible' },
+        { text: 'Restrictive covenants require compatible surface cover; landscaping must be coordinated with EPA institutional controls.', status: 'documented' },
+      ],
+    },
+    waterEnvironment: {
+      items: [
+        { text: 'Groundwater contamination (creosote, PCP, dioxins) remains under active remediation funded by IIJA ($40M, 2021).', status: 'documented' },
+        { text: 'A containment cell on OU-1 requires ongoing surface protection; construction must not damage it.', status: 'documented' },
+        { text: '33+ groundwater monitoring wells on-site must remain accessible and undisturbed.', status: 'documented' },
+        { text: 'Groundwater use on-site is prohibited by EPA restrictive covenants.', status: 'documented' },
+        { text: 'Status of OU-2 groundwater cleanup completion is not confirmed from public records.', status: 'unknown' },
+      ],
+    },
+    neighborhoodProtection: {
+      items: [
+        { text: 'Population within 1 mile: 8,188 — this is an urban location requiring careful attention to neighborhood impacts.', status: 'documented' },
+        { text: '400+ households were permanently relocated due to contamination — redevelopment must be sensitive to this community history.', status: 'documented' },
+        { text: 'Restrictive covenants prohibit residential use, recreation, mining, and agriculture on the site.', status: 'documented' },
+        { text: 'EPA OIG report (2024) noted insufficient engineering controls and poorly enforced institutional controls.', status: 'documented' },
+      ],
+    },
+    communityBenefits: {
+      items: [
+        { text: 'EPA estimated full buildout of Mid-Town Commerce Park could support 1,700+ jobs and $132M annual employee income.', status: 'documented' },
+        { text: 'County estimated $4.4M in annual local tax revenue at full buildout.', status: 'documented' },
+        { text: 'Redevelopment could restore economic vitality to a neighborhood that lost 400+ households.', status: 'possible' },
+        { text: 'Environmental justice screening (EJScreen) and a community benefit agreement are appropriate given the site history.', status: 'possible' },
+        { text: 'Whether any parcels have been sold or developed since the 2018 transfer to Escambia County is unconfirmed.', status: 'unknown' },
+      ],
+    },
+    keyQuestionsBeforeApproval: [
+      'What is the current status of OU-2 groundwater cleanup? Is remediation on schedule?',
+      'How will construction activities be coordinated with the existing containment cell and 33+ monitoring wells?',
+      'What community engagement has been conducted with residents and former residents who were displaced?',
+      'Have the institutional control enforcement gaps identified in the EPA OIG report (2024) been addressed?',
+      'What specific environmental justice considerations apply, and has an EJScreen analysis been completed?',
+      'What enforceable community benefit commitments (local hiring, job training, neighborhood improvements) will be required?',
+      'Unlike retired power plant sites, there is no legacy high-voltage interconnection — what is the utility capacity for the Pensacola distribution network?',
+    ],
+  },
 
   tradeoffs: [
     {
