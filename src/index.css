@@ -41,6 +41,8 @@ code {
   display: flex;
   align-items: baseline;
   gap: 0.6rem;
+  min-width: 0;
+  flex-shrink: 1;
 }
 
 .app-header h1 {
@@ -54,6 +56,39 @@ code {
   font-size: 0.75rem;
   opacity: 0.8;
   font-weight: 400;
+}
+
+/* Tab navigation in header */
+.app-header-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.header-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.header-tab:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+}
+.header-tab.active {
+  background: rgba(255, 255, 255, 0.22);
+  color: white;
+  font-weight: 600;
+  border-color: rgba(255, 255, 255, 0.35);
 }
 
 .app-header-actions {
@@ -91,7 +126,8 @@ code {
   margin: 0 auto;
   width: 100%;
   box-sizing: border-box;
-  overflow: hidden;
+  overflow-x: hidden;
+  min-width: 0;
 }
 
 .app-content.controls-collapsed {
@@ -99,7 +135,7 @@ code {
 }
 
 .sidebar {
-  width: 260px;
+  width: 240px;
   flex-shrink: 0;
   transition: width 0.2s ease, opacity 0.2s ease;
   overflow-y: auto;
@@ -190,13 +226,13 @@ code {
 .metric-ribbon {
   display: flex;
   gap: 0.5rem;
-  overflow-x: auto;
+  flex-wrap: wrap;
   padding-bottom: 0.25rem;
 }
 
 .ribbon-card {
-  flex: 0 0 auto;
-  min-width: 120px;
+  flex: 1 1 auto;
+  min-width: 100px;
   background: white;
   border-radius: 6px;
   padding: 0.5rem 0.65rem;
@@ -255,6 +291,7 @@ code {
   padding: 0.75rem 1rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   position: relative;
+  overflow: hidden;
 }
 
 .energy-flow-header {
@@ -308,7 +345,7 @@ code {
 /* Energy flow diagram grid: narrow sides, wide center for Florida */
 .v2-diagram {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(200px, 1.8fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.8fr) minmax(0, 1fr);
   gap: 0;
   align-items: start;
   min-height: 300px;
@@ -415,6 +452,7 @@ code {
   height: auto;
   max-height: 240px;
   margin-bottom: -4px; /* overlap with panel for visual unity */
+  overflow: visible;
 }
 
 /* Info panel — visually connected to the map via shared background zone */
@@ -425,7 +463,8 @@ code {
   padding: 0.5rem 0.85rem 0.45rem;
   text-align: center;
   width: fit-content;
-  min-width: 200px;
+  min-width: 160px;
+  max-width: 100%;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
   position: relative;
 }
@@ -593,7 +632,7 @@ code {
   border-left: 3px solid #22c55e;
   background: #f8f9fa;
   font-size: 0.72rem;
-  min-width: 180px;
+  min-width: 140px;
 }
 
 .flow-storage-node strong {
@@ -624,19 +663,19 @@ code {
 
 .featured-charts {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.75rem;
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1400px) {
   .featured-charts {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-@media (max-width: 800px) {
+@media (max-width: 900px) {
   .featured-charts {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -734,7 +773,7 @@ code {
 
 .metrics-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 0.75rem;
   margin-top: 0.75rem;
 }
@@ -978,13 +1017,9 @@ code {
 
 .fin-summary-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 0.75rem;
   margin-bottom: 0.75rem;
-}
-
-@media (max-width: 800px) {
-  .fin-summary-row { grid-template-columns: 1fr; }
 }
 
 .fin-summary-card {
@@ -1033,13 +1068,9 @@ code {
 
 .financial-perspectives {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 0.75rem;
   margin-bottom: 0.75rem;
-}
-
-@media (max-width: 900px) {
-  .financial-perspectives { grid-template-columns: 1fr; }
 }
 
 .financial-section {
@@ -1103,13 +1134,9 @@ code {
 
 .financial-comparison-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 0.75rem;
   margin-bottom: 0.75rem;
-}
-
-@media (max-width: 900px) {
-  .financial-comparison-row { grid-template-columns: 1fr; }
 }
 
 .financial-comparison {
@@ -1235,7 +1262,7 @@ code {
 
 /* ── Responsive Breakpoints ───────────────────────────────── */
 
-@media (max-width: 1100px) {
+@media (max-width: 1280px) {
   .v2-diagram {
     grid-template-columns: 1fr;
     gap: 0.75rem;
@@ -1260,6 +1287,12 @@ code {
   }
 }
 
+@media (max-width: 1200px) {
+  .sidebar {
+    width: 200px;
+  }
+}
+
 @media (max-width: 1024px) {
   .app-content {
     flex-direction: column;
@@ -1275,13 +1308,44 @@ code {
   }
 }
 
+@media (max-width: 1024px) {
+  .site-explorer-body {
+    flex-direction: column;
+  }
+  .site-explorer-map-panel {
+    flex: none;
+    max-width: 100%;
+    position: static;
+    overflow: visible;
+  }
+  /* Show map + list in a horizontal layout when stacked */
+  .site-explorer-map-panel {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    grid-template-rows: auto auto;
+    gap: 0 1rem;
+    align-items: start;
+  }
+  .site-explorer-map {
+    grid-row: 1 / 3;
+    max-width: 280px;
+  }
+  .site-map-legend {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .site-comparison-list {
+    grid-column: 2;
+    grid-row: 2;
+    margin-top: 0;
+  }
+}
+
 @media (max-width: 768px) {
   .app-header h1 { font-size: 0.95rem; }
   .app-header-subtitle { display: none; }
-
-  .metric-ribbon {
-    flex-wrap: wrap;
-  }
+  .app-header-tabs { gap: 0.15rem; }
+  .header-tab { padding: 0.25rem 0.5rem; font-size: 0.72rem; }
 
   .ribbon-card {
     min-width: calc(50% - 0.5rem);
@@ -1291,4 +1355,435 @@ code {
   .assumptions-content {
     grid-template-columns: 1fr;
   }
+
+  /* On very narrow screens, stack map and table vertically */
+  .site-explorer-map-panel {
+    display: flex;
+    flex-direction: column;
+  }
+  .site-explorer-map {
+    max-width: 100%;
+  }
+}
+
+/* =========================================================================
+   Site Explorer
+   ========================================================================= */
+
+.site-explorer-content {
+  display: block;
+  box-sizing: border-box;
+  max-width: 1920px;
+  margin: 0 auto;
+  width: 100%;
+}
+.site-explorer-content .main-content {
+  max-width: 100%;
+  margin: 0;
+}
+
+.site-explorer {
+  padding: 0.75rem 1rem;
+}
+
+.site-explorer-header {
+  margin-bottom: 1rem;
+}
+.site-explorer-header h2 {
+  margin: 0 0 0.2rem;
+  font-size: 1.15rem;
+  color: #1e293b;
+}
+.site-explorer-subtitle {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+/* ── Map + table (left) / Detail (right) layout ───────────── */
+.site-explorer-body {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.site-explorer-map-panel {
+  flex: 0 0 320px;
+  max-width: 320px;
+  position: sticky;
+  top: 0.5rem;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.site-explorer-map {
+  width: 100%;
+  height: auto;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.site-marker { cursor: pointer; }
+.marker-label {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  pointer-events: none;
+}
+
+/* Pulse animation for selected marker */
+@keyframes marker-pulse-anim {
+  0%   { r: 10; opacity: 0.4; }
+  100% { r: 18; opacity: 0; }
+}
+.marker-pulse {
+  animation: marker-pulse-anim 1.5s ease-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .marker-pulse { animation: none; opacity: 0.2; }
+}
+
+/* Map legend */
+.site-map-legend {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.35rem 0;
+  font-size: 0.68rem;
+  color: #64748b;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.legend-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  border: 1px solid #cbd5e1;
+}
+
+/* ── Comparison list ───────────────────────────────────────── */
+.site-comparison-list {
+  margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.site-comparison-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  padding: 0.4rem 0.5rem;
+  background: white;
+  border: 1px solid #f1f5f9;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: left;
+  font-size: 0.72rem;
+  color: #334155;
+  transition: background 0.1s;
+}
+.site-comparison-item:hover {
+  background: #f1f5f9;
+}
+.site-comparison-item.selected {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+.table-marker {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.site-comparison-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.site-comparison-name {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 0.72rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.site-comparison-meta {
+  font-size: 0.62rem;
+  color: #94a3b8;
+}
+.table-classification {
+  display: inline-block;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 0.6rem;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.table-classification.redevelopment_opportunity {
+  background: #dbeafe;
+  color: #1e40af;
+}
+.table-classification.active_proposal {
+  background: #fef3c7;
+  color: #92400e;
+}
+.table-classification.case_study {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+/* ── Detail panel (right) ─────────────────────────────────── */
+.site-explorer-detail-panel {
+  flex: 1;
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+.site-detail {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1.25rem;
+}
+
+.site-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+.site-detail-header h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #1e293b;
+}
+.site-detail-location {
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.classification-badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 5px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border: 1px solid;
+  white-space: nowrap;
+}
+
+.site-detail-why {
+  font-size: 0.8rem;
+  color: #475569;
+  line-height: 1.5;
+  margin: 0 0 1rem;
+  padding: 0.6rem 0.75rem;
+  background: #f8fafc;
+  border-left: 3px solid #3b82f6;
+  border-radius: 0 4px 4px 0;
+}
+
+.site-detail-section {
+  margin-bottom: 1.25rem;
+}
+.site-detail-section h4 {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  color: #1e293b;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 0.3rem;
+}
+
+/* Facts grid */
+.site-facts-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+.site-fact-row {
+  padding: 0.5rem 0.6rem;
+  background: #fafbfc;
+  border-radius: 5px;
+  border: 1px solid #f1f5f9;
+}
+.site-fact-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.2rem;
+}
+.site-fact-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.site-fact-value {
+  font-size: 0.8rem;
+  color: #1e293b;
+  line-height: 1.45;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+.site-fact-source {
+  font-size: 0.68rem;
+  color: #94a3b8;
+  margin-top: 0.2rem;
+}
+.source-link {
+  color: #3b82f6;
+  margin-left: 0.25rem;
+  vertical-align: middle;
+}
+.site-fact-note {
+  font-size: 0.72rem;
+  color: #b45309;
+  margin-top: 0.25rem;
+  font-style: italic;
+}
+
+/* Confidence badge */
+.confidence-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Uncertainties */
+.site-uncertainties {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.site-uncertainties li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  color: #475569;
+  line-height: 1.4;
+}
+.uncertainty-icon {
+  flex-shrink: 0;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+/* ── Tradeoff cards ───────────────────────────────────────── */
+.tradeoff-disclaimer {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  font-style: italic;
+  margin: 0 0 0.6rem;
+}
+.tradeoff-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.tradeoff-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.tradeoff-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  padding: 0.45rem 0.6rem;
+  background: #f8fafc;
+  border: none;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #334155;
+  text-align: left;
+  transition: background 0.1s;
+}
+.tradeoff-header:hover {
+  background: #f1f5f9;
+}
+.tradeoff-icon {
+  color: #64748b;
+  flex-shrink: 0;
+}
+.tradeoff-category {
+  flex: 1;
+}
+.tradeoff-body {
+  padding: 0.6rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.tradeoff-section {
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: #475569;
+  padding: 0.35rem 0.5rem;
+  border-radius: 4px;
+}
+.tradeoff-section strong {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  display: block;
+  margin-bottom: 0.15rem;
+}
+.tradeoff-benefit { background: #f0fdf4; }
+.tradeoff-benefit strong { color: #166534; }
+.tradeoff-impact { background: #fef2f2; }
+.tradeoff-impact strong { color: #991b1b; }
+.tradeoff-investigation { background: #eff6ff; }
+.tradeoff-investigation strong { color: #1e40af; }
+
+/* ── Confidence legend ────────────────────────────────────── */
+.confidence-legend {
+  padding-top: 0.5rem;
+  border-top: 1px solid #e2e8f0;
+}
+.confidence-legend-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  color: #475569;
+}
+.confidence-legend-grid > div {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+/* ── Footer disclaimer ────────────────────────────────────── */
+.site-explorer-footer {
+  margin-top: 1.25rem;
+  padding: 0.75rem;
+  background: #fefce8;
+  border: 1px solid #fde68a;
+  border-radius: 6px;
+}
+.site-explorer-footer p {
+  margin: 0;
+  font-size: 0.72rem;
+  color: #854d0e;
+  line-height: 1.5;
 }

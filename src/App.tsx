@@ -12,8 +12,11 @@ import { MetricRibbon } from './components/MetricRibbon'
 import { FeaturedCharts } from './components/FeaturedCharts'
 import { FinancialDashboard } from './components/FinancialDashboard'
 import { AssumptionsPanel } from './components/AssumptionsPanel'
-import { Menu, X, ChevronDown, ChevronRight } from 'lucide-react'
+import { SiteExplorer } from './components/SiteExplorer'
+import { Menu, X, ChevronDown, ChevronRight, Zap, MapPin } from 'lucide-react'
 import './index.css'
+
+type AppTab = 'energy-flow' | 'site-explorer';
 
 function App() {
   const [config, setConfig] = useState<ScenarioConfig>(floridaDefaults)
@@ -22,6 +25,7 @@ function App() {
   const [showControls, setShowControls] = useState(true)
   const [financialAssumptions, setFinancialAssumptions] = useState<FinancialAssumptions>(defaultFinancialAssumptions)
   const [showDetailedCharts, setShowDetailedCharts] = useState(false)
+  const [activeTab, setActiveTab] = useState<AppTab>('energy-flow')
 
   // Lifted selectedHour state so MetricRibbon, EnergyFlow, and FeaturedCharts share it
   const [selectedHour, setSelectedHour] = useState<number>(() => {
@@ -70,15 +74,37 @@ function App() {
           <h1>Florida AI Grid Demonstrator</h1>
           <span className="app-header-subtitle">Modeling a Smarter, More Resilient Energy Future</span>
         </div>
-        <div className="app-header-actions">
+        <nav className="app-header-tabs" role="tablist">
           <button
-            className="header-btn"
-            onClick={() => setShowControls(!showControls)}
-            aria-label={showControls ? 'Hide controls' : 'Show controls'}
+            role="tab"
+            className={`header-tab ${activeTab === 'energy-flow' ? 'active' : ''}`}
+            aria-selected={activeTab === 'energy-flow'}
+            onClick={() => setActiveTab('energy-flow')}
           >
-            {showControls ? <X size={16} /> : <Menu size={16} />}
-            <span>{showControls ? 'Hide' : 'Controls'}</span>
+            <Zap size={14} />
+            Energy Flow
           </button>
+          <button
+            role="tab"
+            className={`header-tab ${activeTab === 'site-explorer' ? 'active' : ''}`}
+            aria-selected={activeTab === 'site-explorer'}
+            onClick={() => setActiveTab('site-explorer')}
+          >
+            <MapPin size={14} />
+            Site Explorer
+          </button>
+        </nav>
+        <div className="app-header-actions">
+          {activeTab === 'energy-flow' && (
+            <button
+              className="header-btn"
+              onClick={() => setShowControls(!showControls)}
+              aria-label={showControls ? 'Hide controls' : 'Show controls'}
+            >
+              {showControls ? <X size={16} /> : <Menu size={16} />}
+              <span>{showControls ? 'Hide' : 'Controls'}</span>
+            </button>
+          )}
           <button
             className="header-btn"
             onClick={() => setShowAssumptions(!showAssumptions)}
@@ -90,56 +116,64 @@ function App() {
 
       {showAssumptions && <AssumptionsPanel />}
 
-      <div className={`app-content ${!showControls ? 'controls-collapsed' : ''}`}>
-        <aside className={`sidebar ${!showControls ? 'hidden' : ''}`}>
-          <Controls config={config} onConfigChange={handleConfigChange} />
-        </aside>
+      {activeTab === 'energy-flow' ? (
+        <div className={`app-content ${!showControls ? 'controls-collapsed' : ''}`}>
+          <aside className={`sidebar ${!showControls ? 'hidden' : ''}`}>
+            <Controls config={config} onConfigChange={handleConfigChange} />
+          </aside>
 
-        <main className="main-content">
-          {/* Metric ribbon */}
-          {currentHour && (
-            <MetricRibbon hour={currentHour} prevHour={prevHour} />
-          )}
+          <main className="main-content">
+            {/* Metric ribbon */}
+            {currentHour && (
+              <MetricRibbon hour={currentHour} prevHour={prevHour} />
+            )}
 
-          {/* Energy flow visualization */}
-          <EnergyFlow
-            config={config}
-            hours={result.hours}
-            selectedHour={selectedHour}
-            onHourChange={setSelectedHour}
-          />
+            {/* Energy flow visualization */}
+            <EnergyFlow
+              config={config}
+              hours={result.hours}
+              selectedHour={selectedHour}
+              onHourChange={setSelectedHour}
+            />
 
-          {/* Three featured charts */}
-          <FeaturedCharts hours={result.hours} selectedHour={selectedHour} />
+            {/* Three featured charts */}
+            <FeaturedCharts hours={result.hours} selectedHour={selectedHour} />
 
-          {/* Summary panel */}
-          <SummaryPanel summary={result.summary} operatingMode={config.operatingMode} />
+            {/* Summary panel */}
+            <SummaryPanel summary={result.summary} operatingMode={config.operatingMode} />
 
-          {/* Collapsible detailed simulation charts */}
-          <div className="detailed-charts-toggle">
-            <button
-              className="collapse-btn"
-              onClick={() => setShowDetailedCharts(!showDetailedCharts)}
-              aria-expanded={showDetailedCharts}
-            >
-              {showDetailedCharts ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-              Detailed Simulation Charts
-            </button>
-          </div>
-          {showDetailedCharts && (
-            <Charts hours={result.hours} operatingMode={config.operatingMode} />
-          )}
+            {/* Collapsible detailed simulation charts */}
+            <div className="detailed-charts-toggle">
+              <button
+                className="collapse-btn"
+                onClick={() => setShowDetailedCharts(!showDetailedCharts)}
+                aria-expanded={showDetailedCharts}
+              >
+                {showDetailedCharts ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                Detailed Simulation Charts
+              </button>
+            </div>
+            {showDetailedCharts && (
+              <Charts hours={result.hours} operatingMode={config.operatingMode} />
+            )}
 
-          {/* Financial dashboard */}
-          <FinancialDashboard
-            hours={result.hours}
-            traditionalHours={traditionalHours}
-            operatingMode={config.operatingMode}
-            assumptions={financialAssumptions}
-            onAssumptionsChange={setFinancialAssumptions}
-          />
-        </main>
-      </div>
+            {/* Financial dashboard */}
+            <FinancialDashboard
+              hours={result.hours}
+              traditionalHours={traditionalHours}
+              operatingMode={config.operatingMode}
+              assumptions={financialAssumptions}
+              onAssumptionsChange={setFinancialAssumptions}
+            />
+          </main>
+        </div>
+      ) : (
+        <div className="app-content site-explorer-content">
+          <main className="main-content">
+            <SiteExplorer />
+          </main>
+        </div>
+      )}
     </div>
   )
 }
