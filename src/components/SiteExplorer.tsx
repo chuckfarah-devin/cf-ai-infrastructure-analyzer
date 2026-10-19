@@ -34,8 +34,10 @@ import {
   type CommunityEvidenceType,
   type CommunityImpactProfile,
 } from '../data/communityImpactData';
+import { getFacilityVisionProfile } from '../data/facilityVisionData';
 
 const SiteSatelliteView = lazy(() => import('./StJohnsSatelliteView'));
+const ResponsibleFacilityVision = lazy(() => import('./ResponsibleFacilityVision'));
 
 // ── Confidence badge ─────────────────────────────────────────
 function ConfidenceBadge({ level }: { level: ConfidenceLevel }) {
@@ -311,8 +313,17 @@ function ClassificationBadge({ site }: { site: CandidateSite }) {
 }
 
 // ── Site detail panel ────────────────────────────────────────
-function SiteDetail({ site, onOpenSatellite }: { site: CandidateSite; onOpenSatellite: () => void }) {
+function SiteDetail({
+  site,
+  onOpenSatellite,
+  onOpenVision,
+}: {
+  site: CandidateSite;
+  onOpenSatellite: () => void;
+  onOpenVision: () => void;
+}) {
   const communityImpact = COMMUNITY_IMPACT_PROFILES.find(profile => profile.siteId === site.id);
+  const facilityVision = getFacilityVisionProfile(site.id);
 
   return (
     <div className="site-detail">
@@ -326,10 +337,18 @@ function SiteDetail({ site, onOpenSatellite }: { site: CandidateSite; onOpenSate
 
       <p className="site-detail-why">{site.whyIncluded}</p>
 
-      <button type="button" className="satellite-view-btn" onClick={onOpenSatellite}>
-        <Satellite size={16} />
-        Explore Satellite View
-      </button>
+      <div className="site-action-buttons">
+        <button type="button" className="satellite-view-btn" onClick={onOpenSatellite}>
+          <Satellite size={16} />
+          Explore Satellite View
+        </button>
+        {facilityVision && (
+          <button type="button" className="facility-vision-btn" onClick={onOpenVision}>
+            <Building2 size={16} />
+            Explore Responsible Facility Vision
+          </button>
+        )}
+      </div>
 
       {/* Community & Environmental Overview */}
       <CommunityOverview overview={site.communityOverview} />
@@ -401,7 +420,7 @@ function SiteDetail({ site, onOpenSatellite }: { site: CandidateSite; onOpenSate
 // ── Main Site Explorer component ─────────────────────────────
 export function SiteExplorer() {
   const [selectedSiteId, setSelectedSiteId] = useState<string>(CANDIDATE_SITES[0].id);
-  const [viewMode, setViewMode] = useState<'overview' | 'satellite'>('overview');
+  const [viewMode, setViewMode] = useState<'overview' | 'satellite' | 'vision'>('overview');
   const selectedSite = CANDIDATE_SITES.find(s => s.id === selectedSiteId) ?? CANDIDATE_SITES[0];
 
   if (viewMode === 'satellite') {
@@ -409,6 +428,21 @@ export function SiteExplorer() {
       <div className="site-explorer site-explorer-satellite">
         <Suspense fallback={<div className="satellite-loading">Loading satellite map…</div>}>
           <SiteSatelliteView key={selectedSite.id} site={selectedSite} onBack={() => setViewMode('overview')} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (viewMode === 'vision') {
+    return (
+      <div className="site-explorer site-explorer-vision">
+        <Suspense fallback={<div className="satellite-loading">Loading facility vision…</div>}>
+          <ResponsibleFacilityVision
+            key={selectedSite.id}
+            site={selectedSite}
+            onBack={() => setViewMode('overview')}
+            onOpenSatellite={() => setViewMode('satellite')}
+          />
         </Suspense>
       </div>
     );
@@ -546,7 +580,11 @@ export function SiteExplorer() {
 
         {/* Right: selected site detail */}
         <div className="site-explorer-detail-panel">
-          <SiteDetail site={selectedSite} onOpenSatellite={() => setViewMode('satellite')} />
+          <SiteDetail
+            site={selectedSite}
+            onOpenSatellite={() => setViewMode('satellite')}
+            onOpenVision={() => setViewMode('vision')}
+          />
         </div>
       </div>
 
