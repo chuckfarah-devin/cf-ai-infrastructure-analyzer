@@ -1,0 +1,113 @@
+export type EnvironmentalLayerId = 'wetlands' | 'flood' | 'conservation' | 'aquatic-preserve' | 'shoreline';
+
+export interface EnvironmentalLayerConfig {
+  id: EnvironmentalLayerId;
+  label: string;
+  agency: string;
+  sourcePage: string;
+  sourceDate: string;
+  limitation: string;
+  queryUrl: string;
+  rasterTiles?: string[];
+  color: string;
+  geometry: 'polygon' | 'line' | 'raster';
+  legendLabel: string;
+}
+
+const contextEnvelope = '-81.575,30.405,-81.505,30.455';
+
+function arcGisQuery(serviceUrl: string, outFields: string): string {
+  const params = new URLSearchParams({
+    where: '1=1',
+    geometry: contextEnvelope,
+    geometryType: 'esriGeometryEnvelope',
+    inSR: '4326',
+    outSR: '4326',
+    spatialRel: 'esriSpatialRelIntersects',
+    outFields,
+    returnGeometry: 'true',
+    maxAllowableOffset: '0.00005',
+    geometryPrecision: '5',
+    resultRecordCount: '1000',
+    f: 'geojson',
+  });
+  return `${serviceUrl}/query?${params.toString()}`;
+}
+
+export const ENVIRONMENTAL_LAYERS: EnvironmentalLayerConfig[] = [
+  {
+    id: 'wetlands',
+    label: 'Mapped Wetlands',
+    agency: 'USFWS National Wetlands Inventory (FDEP-hosted Florida service)',
+    sourcePage: 'https://www.fws.gov/program/national-wetlands-inventory/web-mapping-services',
+    sourceDate: 'Current public service; national updates are published biannually. Feature vintage varies by mapping project.',
+    limitation: 'Screening data only. NWI uses a biological definition and is not a regulatory wetland delineation or jurisdictional determination.',
+    queryUrl: arcGisQuery(
+      'https://ca.dep.state.fl.us/arcgis/rest/services/Map_Direct/Program_Support/MapServer/6',
+      'WETLAND_TYPE,ATTRIBUTE,ACRES',
+    ),
+    color: '#22d3ee',
+    geometry: 'polygon',
+    legendLabel: 'NWI mapped wetland or deepwater habitat',
+  },
+  {
+    id: 'flood',
+    label: 'Effective Flood Hazards',
+    agency: 'FEMA National Flood Hazard Layer',
+    sourcePage: 'https://hazards.fema.gov/femaportal/resources/flood_map_svc.htm',
+    sourceDate: 'Current effective NFHL service; revised data is added continuously.',
+    limitation: 'Screening context only. Consult the official effective FIRM/FIRMette and site-specific elevation information for a determination.',
+    queryUrl: 'https://hazards.fema.gov/arcgis/services/public/NFHLWMS/MapServer/WMSServer?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=28&STYLES=default&FORMAT=image/png&TRANSPARENT=true&SRS=EPSG:4326&BBOX=-81.59,30.39,-81.48,30.47&WIDTH=2&HEIGHT=2',
+    rasterTiles: [
+      'https://hazards.fema.gov/arcgis/services/public/NFHLWMS/MapServer/WMSServer?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=28&STYLES=default&FORMAT=image/png&TRANSPARENT=true&SRS=EPSG:3857&BBOX={bbox-epsg-3857}&WIDTH=256&HEIGHT=256',
+    ],
+    color: '#a855f7',
+    geometry: 'raster',
+    legendLabel: 'FEMA effective flood-hazard area',
+  },
+  {
+    id: 'conservation',
+    label: 'Conservation Lands',
+    agency: 'FDEP / Florida Natural Areas Inventory',
+    sourcePage: 'https://www.fnai.org/publications/gis-data',
+    sourceDate: 'Florida Conservation Lands, September 2026 edition; normally updated quarterly.',
+    limitation: 'Managed-area context only. These polygons do not establish legal ownership, access rights, or surveyed boundaries.',
+    queryUrl: arcGisQuery(
+      'https://ca.dep.state.fl.us/arcgis/rest/services/Map_Direct/Environment/MapServer/38',
+      'MANAME,MANAGING_A,OWNER,PROTSTAT',
+    ),
+    color: '#4ade80',
+    geometry: 'polygon',
+    legendLabel: 'Managed conservation land',
+  },
+  {
+    id: 'aquatic-preserve',
+    label: 'Aquatic Preserve',
+    agency: 'Florida DEP Division of State Lands',
+    sourcePage: 'https://ags.dep.state.fl.us/arcgis/rest/services/OpenData/AQUATIC_PRESERVES/MapServer/0',
+    sourceDate: 'Current FDEP public service; dataset publication date is not stated in the service metadata.',
+    limitation: 'General statutory context. Official legal descriptions and surveyed records control if boundaries differ.',
+    queryUrl: arcGisQuery(
+      'https://ags.dep.state.fl.us/arcgis/rest/services/OpenData/AQUATIC_PRESERVES/MapServer/0',
+      'NAME,COUNTIES,REGION,PRESERVE_MANAGER',
+    ),
+    color: '#818cf8',
+    geometry: 'polygon',
+    legendLabel: 'FDEP aquatic preserve',
+  },
+  {
+    id: 'shoreline',
+    label: 'Shoreline Reference',
+    agency: 'NOAA Composite Shoreline, Florida DEP-hosted extract',
+    sourcePage: 'https://shoreline.noaa.gov/data/datasheets/composite.html',
+    sourceDate: 'Multi-temporal NOAA source; feature and service publication dates vary or are not stated.',
+    limitation: 'Reference shoreline only. Shorelines change over time and this layer is not a property, ownership, or legal boundary.',
+    queryUrl: 'https://ca.dep.state.fl.us/arcgis/rest/services/Map_Direct/Program_Support/MapServer?f=json',
+    rasterTiles: [
+      'https://ca.dep.state.fl.us/arcgis/rest/services/Map_Direct/Program_Support/MapServer/export?bbox={bbox-epsg-3857}&bboxSR=3857&imageSR=3857&layers=show%3A41&size=256%2C256&format=png32&transparent=true&f=image',
+    ],
+    color: '#ef4444',
+    geometry: 'raster',
+    legendLabel: 'NOAA composite shoreline reference',
+  },
+];
