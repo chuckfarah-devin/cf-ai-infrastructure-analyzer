@@ -30,7 +30,7 @@ import {
   type OverviewItem,
 } from '../data/siteExplorerData';
 
-const StJohnsSatelliteView = lazy(() => import('./StJohnsSatelliteView'));
+const SiteSatelliteView = lazy(() => import('./StJohnsSatelliteView'));
 
 // ── Confidence badge ─────────────────────────────────────────
 function ConfidenceBadge({ level }: { level: ConfidenceLevel }) {
@@ -243,12 +243,10 @@ function SiteDetail({ site, onOpenSatellite }: { site: CandidateSite; onOpenSate
 
       <p className="site-detail-why">{site.whyIncluded}</p>
 
-      {site.id === 'st-johns' && (
-        <button type="button" className="satellite-view-btn" onClick={onOpenSatellite}>
-          <Satellite size={16} />
-          Explore Satellite View
-        </button>
-      )}
+      <button type="button" className="satellite-view-btn" onClick={onOpenSatellite}>
+        <Satellite size={16} />
+        Explore Satellite View
+      </button>
 
       {/* Community & Environmental Overview */}
       <CommunityOverview overview={site.communityOverview} />
@@ -325,7 +323,7 @@ export function SiteExplorer() {
     return (
       <div className="site-explorer site-explorer-satellite">
         <Suspense fallback={<div className="satellite-loading">Loading satellite map…</div>}>
-          <StJohnsSatelliteView onBack={() => setViewMode('overview')} />
+          <SiteSatelliteView site={selectedSite} onBack={() => setViewMode('overview')} />
         </Suspense>
       </div>
     );

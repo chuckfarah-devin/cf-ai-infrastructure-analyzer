@@ -72,6 +72,7 @@ export interface CandidateSite {
   county: string;
   city: string;
   coordinates: { lat: number; lon: number };
+  coordinateSource: SourceCitation;
   /** Position on the Census-based Florida SVG (viewBox 0 0 400 386) */
   svgPosition: { x: number; y: number };
   markerColor: string;
@@ -104,8 +105,9 @@ const stJohns: CandidateSite = {
   classificationLabel: 'Potential Redevelopment Opportunity',
   county: 'Duval',
   city: 'Jacksonville',
-  coordinates: { lat: 30.4167, lon: -81.5333 },
-  svgPosition: { x: 315, y: 43 },
+  coordinates: { lat: 30.4281, lon: -81.548331 },
+  coordinateSource: { label: 'Florida DEP storage-tank facility inspection record, 11201 New Berlin Road', date: 'Sep 2016' },
+  svgPosition: { x: 314.2, y: 42.3 },
   markerColor: '#3b82f6',
 
   formerUse: {
@@ -268,8 +270,9 @@ const desoto: CandidateSite = {
   classificationLabel: 'Active Data Center Proposal',
   county: 'DeSoto',
   city: 'Arcadia',
-  coordinates: { lat: 27.2181, lon: -81.8587 },
-  svgPosition: { x: 299, y: 224 },
+  coordinates: { lat: 27.223170, lon: -81.811582 },
+  coordinateSource: { label: 'DeSoto County Plant LLC public site listing, 3800 NE Roan Street', date: '2025' },
+  svgPosition: { x: 301.1, y: 223.2 },
   markerColor: '#f59e0b',
 
   formerUse: {
@@ -433,8 +436,9 @@ const indiantown: CandidateSite = {
   classificationLabel: 'Educational Case Study — Utility-Led Reuse',
   county: 'Martin',
   city: 'Indiantown',
-  coordinates: { lat: 27.0275, lon: -80.4786 },
-  svgPosition: { x: 368, y: 234 },
+  coordinates: { lat: 27.038889, lon: -80.5125 },
+  coordinateSource: { label: 'Florida DEP Conditions of Certification PA 90-31, 13303 SW Silver Fox Lane', date: '2019' },
+  svgPosition: { x: 366, y: 233.6 },
   markerColor: '#22c55e',
 
   formerUse: {
@@ -574,8 +578,9 @@ const escambia: CandidateSite = {
   classificationLabel: 'Potential Redevelopment Opportunity',
   county: 'Escambia',
   city: 'Pensacola',
-  coordinates: { lat: 30.4550, lon: -87.2125 },
-  svgPosition: { x: 31, y: 41 },
+  coordinates: { lat: 30.4553, lon: -87.2317 },
+  coordinateSource: { label: 'EPA NPL location data, 3910 North Palafox Street', date: '2008' },
+  svgPosition: { x: 30.1, y: 40.8 },
   markerColor: '#8b5cf6',
 
   formerUse: {
