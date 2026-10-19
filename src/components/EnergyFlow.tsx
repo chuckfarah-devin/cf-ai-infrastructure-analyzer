@@ -148,6 +148,7 @@ export function EnergyFlow({ config, hours, selectedHour, onHourChange }: Energy
   >([]);
   const [junctions, setJunctions] = useState<{ x: number; y: number }[]>([]);
   const [svgSize, setSvgSize] = useState({ w: 0, h: 0 });
+  const lastGeometryRef = useRef('');
 
   // Stable key for connector recomputation — avoids array-reference churn
   const genKeys = generationRows.map(r => r.key + ':' + Math.round(r.value)).join(',');
@@ -257,24 +258,57 @@ export function EnergyFlow({ config, hours, selectedHour, onHourChange }: Energy
       }
     }
 
+    const geometryKey = JSON.stringify({
+      size: [dRect.width, dRect.height],
+      paths: newConnectors.map(({ d, width }) => [d, width]),
+      junctions: newJunctions,
+    });
+    if (geometryKey === lastGeometryRef.current) return;
+
+    lastGeometryRef.current = geometryKey;
     setConnectors(newConnectors);
     setJunctions(newJunctions);
     setSvgSize({ w: dRect.width, h: dRect.height });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [genKeys, demKeys, chargeMW, dischargeMW, maxFlowMW]);
 
-  // Recompute on data change and on resize
   useEffect(() => {
-    computeConnectors();
-    window.addEventListener('resize', computeConnectors);
-    return () => window.removeEventListener('resize', computeConnectors);
-  }, [computeConnectors]);
+    const diagram = diagramRef.current;
+    if (!diagram) return;
 
-  // Recompute after a short delay to catch layout shifts
-  useEffect(() => {
-    const t = setTimeout(computeConnectors, 150);
-    return () => clearTimeout(t);
-  }, [computeConnectors, selectedHour]);
+    let active = true;
+    let firstFrame = 0;
+    let secondFrame = 0;
+    const scheduleMeasurement = () => {
+      if (!active) return;
+      cancelAnimationFrame(firstFrame);
+      cancelAnimationFrame(secondFrame);
+      firstFrame = requestAnimationFrame(() => {
+        secondFrame = requestAnimationFrame(computeConnectors);
+      });
+    };
+
+    const observer = new ResizeObserver(scheduleMeasurement);
+    observer.observe(diagram);
+    if (mapSvgRef.current) observer.observe(mapSvgRef.current);
+    if (storageRailRef.current) observer.observe(storageRailRef.current);
+    sourceRefs.current.forEach(el => { if (el) observer.observe(el); });
+    demandRefs.current.forEach(el => { if (el) observer.observe(el); });
+
+    scheduleMeasurement();
+    window.addEventListener('resize', scheduleMeasurement);
+    window.addEventListener('load', scheduleMeasurement);
+    document.fonts?.ready.then(scheduleMeasurement);
+
+    return () => {
+      active = false;
+      cancelAnimationFrame(firstFrame);
+      cancelAnimationFrame(secondFrame);
+      observer.disconnect();
+      window.removeEventListener('resize', scheduleMeasurement);
+      window.removeEventListener('load', scheduleMeasurement);
+    };
+  }, [computeConnectors]);
 
   const imports = Math.max(0, hour.netGridLoadMW);
   const exports = hour.gridExportMW;

@@ -60,29 +60,38 @@ export function Controls({ config, onConfigChange }: ControlsProps) {
         </label>
       </div>
 
-      <div className="control-section">
-        <h3>Operating Mode</h3>
-        <label>
-          <input
-            type="radio"
-            name="operatingMode"
-            value="traditional"
-            checked={config.operatingMode === 'traditional'}
-            onChange={() => handleChange('operatingMode', 'traditional')}
-          />
-          Traditional (Current State)
+      <div className="control-section energy-strategy-control">
+        <h3>Energy Strategy</h3>
+        <label className="energy-strategy-option">
+          <span className="energy-strategy-title">
+            <input
+              type="radio"
+              name="operatingMode"
+              value="traditional"
+              checked={config.operatingMode === 'traditional'}
+              onChange={() => handleChange('operatingMode', 'traditional')}
+            />
+            Today's Energy System
+          </span>
+          <span className="energy-strategy-description">Energy resources operate mostly independently.</span>
         </label>
-        <label>
-          <input
-            type="radio"
-            name="operatingMode"
-            value="coordinated"
-            checked={config.operatingMode === 'coordinated'}
-            onChange={() => handleChange('operatingMode', 'coordinated')}
-          />
-          <Tooltip term="VPP" definition="Virtual Power Plant - a network of decentralized power units that act as a single power plant">
-            Coordinated (VPP)
-          </Tooltip>
+        <label className="energy-strategy-option">
+          <span className="energy-strategy-title">
+            <input
+              type="radio"
+              name="operatingMode"
+              value="coordinated"
+              checked={config.operatingMode === 'coordinated'}
+              onChange={() => handleChange('operatingMode', 'coordinated')}
+            />
+            Smarter, Coordinated Energy
+          </span>
+          <span className="energy-strategy-description">
+            Participating energy resources work together to improve grid flexibility.{' '}
+            <Tooltip term="VPP" definition="Virtual Power Plant — coordinated operation of distributed energy resources such as batteries, electric vehicles, solar, and flexible loads.">
+              Engineering details
+            </Tooltip>
+          </span>
         </label>
       </div>
 

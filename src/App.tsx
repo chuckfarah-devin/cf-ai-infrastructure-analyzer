@@ -72,7 +72,7 @@ function App() {
       <header className="app-header">
         <div className="app-header-brand">
           <h1>Florida AI Grid Demonstrator</h1>
-          <span className="app-header-subtitle">Modeling a Smarter, More Resilient Energy Future</span>
+          <span className="app-header-subtitle">Building a Smarter, More Resilient Energy Future — Responsibly.</span>
         </div>
         <nav className="app-header-tabs" role="tablist">
           <button

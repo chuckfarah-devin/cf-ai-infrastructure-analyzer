@@ -6,12 +6,12 @@
  * and a detailed profile for the selected site.
  */
 
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import {
   Building2, AlertTriangle, CheckCircle, HelpCircle,
   Info, ExternalLink, ChevronDown, ChevronRight, Leaf, Users,
   Droplets, Shield, Eye, Zap, TreePine, MessageSquare,
-  CircleDot, CircleDashed, CircleHelp
+  CircleDot, CircleDashed, CircleHelp, Satellite
 } from 'lucide-react';
 import {
   FLORIDA_MAINLAND_PATH,
@@ -29,6 +29,8 @@ import {
   type CommunityEnvironmentalOverview,
   type OverviewItem,
 } from '../data/siteExplorerData';
+
+const StJohnsSatelliteView = lazy(() => import('./StJohnsSatelliteView'));
 
 // ── Confidence badge ─────────────────────────────────────────
 function ConfidenceBadge({ level }: { level: ConfidenceLevel }) {
@@ -228,7 +230,7 @@ function ClassificationBadge({ site }: { site: CandidateSite }) {
 }
 
 // ── Site detail panel ────────────────────────────────────────
-function SiteDetail({ site }: { site: CandidateSite }) {
+function SiteDetail({ site, onOpenSatellite }: { site: CandidateSite; onOpenSatellite: () => void }) {
   return (
     <div className="site-detail">
       <div className="site-detail-header">
@@ -240,6 +242,13 @@ function SiteDetail({ site }: { site: CandidateSite }) {
       </div>
 
       <p className="site-detail-why">{site.whyIncluded}</p>
+
+      {site.id === 'st-johns' && (
+        <button type="button" className="satellite-view-btn" onClick={onOpenSatellite}>
+          <Satellite size={16} />
+          Explore Satellite View
+        </button>
+      )}
 
       {/* Community & Environmental Overview */}
       <CommunityOverview overview={site.communityOverview} />
@@ -309,7 +318,18 @@ function SiteDetail({ site }: { site: CandidateSite }) {
 // ── Main Site Explorer component ─────────────────────────────
 export function SiteExplorer() {
   const [selectedSiteId, setSelectedSiteId] = useState<string>(CANDIDATE_SITES[0].id);
+  const [viewMode, setViewMode] = useState<'overview' | 'satellite'>('overview');
   const selectedSite = CANDIDATE_SITES.find(s => s.id === selectedSiteId) ?? CANDIDATE_SITES[0];
+
+  if (viewMode === 'satellite') {
+    return (
+      <div className="site-explorer site-explorer-satellite">
+        <Suspense fallback={<div className="satellite-loading">Loading satellite map…</div>}>
+          <StJohnsSatelliteView onBack={() => setViewMode('overview')} />
+        </Suspense>
+      </div>
+    );
+  }
 
   return (
     <div className="site-explorer">
@@ -443,7 +463,7 @@ export function SiteExplorer() {
 
         {/* Right: selected site detail */}
         <div className="site-explorer-detail-panel">
-          <SiteDetail site={selectedSite} />
+          <SiteDetail site={selectedSite} onOpenSatellite={() => setViewMode('satellite')} />
         </div>
       </div>
 
