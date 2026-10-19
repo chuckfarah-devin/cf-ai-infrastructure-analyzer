@@ -125,7 +125,11 @@ function App() {
           <main className="main-content">
             {/* Metric ribbon */}
             {currentHour && (
-              <MetricRibbon hour={currentHour} prevHour={prevHour} />
+              <MetricRibbon
+                hour={currentHour}
+                prevHour={prevHour}
+                nuclearCapacityMW={config.nuclearCapacityMW ?? 0}
+              />
             )}
 
             {/* Energy flow visualization */}

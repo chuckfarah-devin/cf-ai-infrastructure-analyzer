@@ -8,6 +8,7 @@ import type { HourResult } from '../simulation/types';
 interface MetricRibbonProps {
   hour: HourResult;
   prevHour: HourResult | null;
+  nuclearCapacityMW: number;
 }
 
 function formatMW(value: number): string {
@@ -29,13 +30,14 @@ function changeBadge(current: number, prev: number | null): { text: string; clas
   };
 }
 
-export function MetricRibbon({ hour, prevHour }: MetricRibbonProps) {
+export function MetricRibbon({ hour, prevHour, nuclearCapacityMW }: MetricRibbonProps) {
   // Total supply = owned generation + purchased power + battery discharge + grid imports
   const totalSupply =
     hour.totalGenerationMW + hour.purchasedPowerMW + hour.batteryDischargeMW + Math.max(0, hour.netGridLoadMW);
 
   const gridImports = Math.max(0, hour.netGridLoadMW);
   const batteryNet = hour.batteryDischargeMW - hour.batteryChargeMW;
+  const nuclearIncluded = nuclearCapacityMW > 0;
 
   const metrics = [
     {
@@ -64,11 +66,11 @@ export function MetricRibbon({ hour, prevHour }: MetricRibbonProps) {
     },
     {
       label: 'Nuclear Output',
-      value: formatMW(hour.nuclearMW),
-      unit: 'MW',
-      sub: pctOfGen(hour.nuclearMW, totalSupply),
+      value: nuclearIncluded ? formatMW(hour.nuclearMW) : 'Not included',
+      unit: nuclearIncluded ? 'MW' : '',
+      sub: nuclearIncluded ? pctOfGen(hour.nuclearMW, totalSupply) : 'in selected preset',
       color: '#8b5cf6',
-      change: changeBadge(hour.nuclearMW, prevHour?.nuclearMW ?? null),
+      change: nuclearIncluded ? changeBadge(hour.nuclearMW, prevHour?.nuclearMW ?? null) : null,
     },
     {
       label: 'Gas Output',
