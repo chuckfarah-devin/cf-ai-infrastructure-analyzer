@@ -323,7 +323,7 @@ export function SiteExplorer() {
     return (
       <div className="site-explorer site-explorer-satellite">
         <Suspense fallback={<div className="satellite-loading">Loading satellite map…</div>}>
-          <SiteSatelliteView site={selectedSite} onBack={() => setViewMode('overview')} />
+          <SiteSatelliteView key={selectedSite.id} site={selectedSite} onBack={() => setViewMode('overview')} />
         </Suspense>
       </div>
     );

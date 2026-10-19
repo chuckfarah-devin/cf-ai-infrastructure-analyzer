@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   AttributionControl,
   ErrorEvent as MapErrorEvent,
@@ -14,7 +14,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import { AlertTriangle, ArrowLeft, ExternalLink, Info, Layers, LoaderCircle, MapPin } from 'lucide-react';
 import type { CandidateSite } from '../data/siteExplorerData';
 import {
-  ENVIRONMENTAL_LAYERS,
+  getEnvironmentalLayers,
   type EnvironmentalLayerConfig,
   type EnvironmentalLayerId,
 } from '../data/environmentalLayers';
@@ -41,9 +41,11 @@ interface LayerState {
   message?: string;
 }
 
-const initialLayerStates = Object.fromEntries(
-  ENVIRONMENTAL_LAYERS.map(layer => [layer.id, { enabled: false, status: 'off' as LayerStatus }]),
-) as Record<EnvironmentalLayerId, LayerState>;
+function createInitialLayerStates(layers: EnvironmentalLayerConfig[]): Record<EnvironmentalLayerId, LayerState> {
+  return Object.fromEntries(
+    layers.map(layer => [layer.id, { enabled: false, status: 'off' as LayerStatus }]),
+  ) as Record<EnvironmentalLayerId, LayerState>;
+}
 
 function mapLayerIds(id: EnvironmentalLayerId): string[] {
   return [`environment-${id}-fill`, `environment-${id}-outline`, `environment-${id}-line`, `environment-${id}-raster`];
@@ -55,6 +57,20 @@ function removeMapLayer(map: Map, id: EnvironmentalLayerId) {
   });
   const sourceId = `environment-${id}`;
   if (map.getSource(sourceId)) map.removeSource(sourceId);
+}
+
+async function fetchEnvironmentalService(url: string, signal: AbortSignal): Promise<Response> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      return await fetch(url, { signal });
+    } catch (error) {
+      lastError = error;
+      if (signal.aborted || attempt === 1) throw error;
+      await new Promise(resolve => window.setTimeout(resolve, 500));
+    }
+  }
+  throw lastError;
 }
 
 function addMapLayer(map: Map, config: EnvironmentalLayerConfig, data?: EnvironmentalGeoJson) {
@@ -118,20 +134,23 @@ function addMapLayer(map: Map, config: EnvironmentalLayerConfig, data?: Environm
 }
 
 export default function SiteSatelliteView({ site, onBack }: SiteSatelliteViewProps) {
+  const environmentalLayers = useMemo(
+    () => getEnvironmentalLayers(site.coordinates),
+    [site.coordinates.lat, site.coordinates.lon],
+  );
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<Map | null>(null);
   const layerDataRef = useRef<Partial<Record<EnvironmentalLayerId, EnvironmentalGeoJson>>>({});
   const requestControllersRef = useRef<Partial<Record<EnvironmentalLayerId, AbortController>>>({});
   const [mapError, setMapError] = useState<string | null>(null);
   const [mapReady, setMapReady] = useState(false);
-  const [layerStates, setLayerStates] = useState(initialLayerStates);
+  const [layerStates, setLayerStates] = useState(() => createInitialLayerStates(environmentalLayers));
   const accessDate = new Intl.DateTimeFormat('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   }).format(new Date());
   const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${site.coordinates.lat},${site.coordinates.lon}`;
-  const showEnvironmentalContext = site.id === 'st-johns';
 
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
@@ -181,6 +200,18 @@ export default function SiteSatelliteView({ site, onBack }: SiteSatelliteViewPro
       if (message.includes('401') || message.includes('403') || message.includes('token')) {
         setMapError('The ArcGIS basemap could not be authorized. Check the key privileges and allowed referrers.');
       }
+      const sourceId = (event as MapErrorEvent & { sourceId?: string }).sourceId;
+      if (sourceId?.startsWith('environment-')) {
+        const id = sourceId.replace('environment-', '') as EnvironmentalLayerId;
+        setLayerStates(current => current[id]?.enabled ? {
+          ...current,
+          [id]: {
+            enabled: true,
+            status: 'error',
+            message: 'The agency map service did not return one or more requested tiles. Turn this layer off and on to retry.',
+          },
+        } : current);
+      }
     });
 
     return () => {
@@ -215,6 +246,12 @@ export default function SiteSatelliteView({ site, onBack }: SiteSatelliteViewPro
       return;
     }
 
+    if (config.geometry === 'raster' && !config.rasterValidation) {
+      addMapLayer(map, config);
+      setLayerState(config.id, { enabled: true, status: 'visible' });
+      return;
+    }
+
     const controller = new AbortController();
     let didTimeout = false;
     const timeout = window.setTimeout(() => {
@@ -225,11 +262,26 @@ export default function SiteSatelliteView({ site, onBack }: SiteSatelliteViewPro
     setLayerState(config.id, { enabled: true, status: 'loading' });
 
     try {
-      const response = await fetch(config.queryUrl, { signal: controller.signal });
+      const response = await fetchEnvironmentalService(config.queryUrl, controller.signal);
       if (!response.ok) throw new Error(`Service returned HTTP ${response.status}`);
       if (config.geometry === 'raster') {
+        let featureCount: number | undefined;
+        if (config.rasterValidation === 'count') {
+          const result = await response.json() as { count?: number; error?: { message?: string } };
+          if (result.error) throw new Error(result.error.message ?? 'The service returned an error.');
+          featureCount = result.count;
+          if (!featureCount) {
+            setLayerState(config.id, {
+              enabled: true,
+              status: 'empty',
+              featureCount: 0,
+              message: 'No mapped shoreline feature was returned for this surrounding context area. This does not establish that no water feature or shoreline exists.',
+            });
+            return;
+          }
+        }
         addMapLayer(map, config);
-        setLayerState(config.id, { enabled: true, status: 'visible' });
+        setLayerState(config.id, { enabled: true, status: 'visible', featureCount });
         return;
       }
       const data = await response.json() as EnvironmentalGeoJson & { error?: { message?: string } };
@@ -304,8 +356,7 @@ export default function SiteSatelliteView({ site, onBack }: SiteSatelliteViewPro
         <span>{site.whyIncluded}</span>
       </div>
 
-      {showEnvironmentalContext && (
-        <section className="environmental-context" aria-labelledby="environmental-context-title">
+      <section className="environmental-context" aria-labelledby="environmental-context-title">
           <div className="environmental-context-heading">
             <Layers size={18} />
             <div>
@@ -314,7 +365,7 @@ export default function SiteSatelliteView({ site, onBack }: SiteSatelliteViewPro
             </div>
           </div>
           <div className="environmental-layer-list">
-            {ENVIRONMENTAL_LAYERS.map(config => {
+            {environmentalLayers.map(config => {
               const state = layerStates[config.id];
               return (
                 <div key={config.id} className={`environmental-layer-card status-${state.status}`}>
@@ -351,6 +402,7 @@ export default function SiteSatelliteView({ site, onBack }: SiteSatelliteViewPro
                   <details className="environmental-layer-details">
                     <summary>Source, date & limitations</summary>
                     <p><strong>Legend:</strong> {config.legendLabel}</p>
+                    <p><strong>Coverage:</strong> {config.coverage}</p>
                     <p><strong>Date:</strong> {config.sourceDate}</p>
                     <p><strong>Limitation:</strong> {config.limitation}</p>
                     <a href={config.sourcePage} target="_blank" rel="noopener noreferrer">
@@ -364,8 +416,7 @@ export default function SiteSatelliteView({ site, onBack }: SiteSatelliteViewPro
           <p className="environmental-context-disclaimer">
             These layers show a fixed surrounding context area for screening and education. They do not identify property boundaries, buildable land, regulatory jurisdiction, or restoration locations. Restoration cannot replace wetland protection or contamination remediation.
           </p>
-        </section>
-      )}
+      </section>
 
       <div className="satellite-map-frame">
         <div ref={mapContainerRef} className="satellite-map" aria-label={`Interactive satellite map of the approximate ${site.name} location`} />
