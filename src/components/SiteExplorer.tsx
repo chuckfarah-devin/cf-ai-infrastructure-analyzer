@@ -11,7 +11,7 @@ import {
   Building2, AlertTriangle, CheckCircle, HelpCircle,
   Info, ExternalLink, ChevronDown, ChevronRight, Leaf, Users,
   Droplets, Shield, Eye, Zap, TreePine, MessageSquare,
-  CircleDot, CircleDashed, CircleHelp, Satellite
+  CircleDot, CircleDashed, CircleHelp, Satellite, Volume2, Lightbulb, Truck
 } from 'lucide-react';
 import {
   FLORIDA_MAINLAND_PATH,
@@ -29,6 +29,11 @@ import {
   type CommunityEnvironmentalOverview,
   type OverviewItem,
 } from '../data/siteExplorerData';
+import {
+  COMMUNITY_IMPACT_PROFILES,
+  type CommunityEvidenceType,
+  type CommunityImpactProfile,
+} from '../data/communityImpactData';
 
 const SiteSatelliteView = lazy(() => import('./StJohnsSatelliteView'));
 
@@ -211,6 +216,82 @@ function CommunityOverview({ overview }: { overview: CommunityEnvironmentalOverv
   );
 }
 
+const COMMUNITY_EVIDENCE_CONFIG: Record<CommunityEvidenceType, { label: string; className: string }> = {
+  documented: { label: 'Documented Public Record', className: 'documented' },
+  'developer-statement': { label: 'Owner / Developer Statement', className: 'statement' },
+  'potential-protection': { label: 'Potential Protection', className: 'protection' },
+  unresolved: { label: 'Unresolved Question', className: 'unresolved' },
+};
+
+function CommunityImpactProtection({ profile }: { profile: CommunityImpactProfile }) {
+  const icons: Record<string, React.ElementType> = {
+    noise: Volume2,
+    water: Droplets,
+    lighting: Lightbulb,
+    traffic: Truck,
+  };
+
+  return (
+    <section className="community-protection" aria-labelledby={`community-protection-${profile.siteId}`}>
+      <div className="community-protection-header">
+        <Shield size={18} />
+        <div>
+          <h4 id={`community-protection-${profile.siteId}`}>Community Impact & Protection</h4>
+          <p>What is documented, what has been claimed, what could be required, and what remains unanswered.</p>
+        </div>
+      </div>
+      <div className="community-evidence-legend">
+        {Object.values(COMMUNITY_EVIDENCE_CONFIG).map(item => (
+          <span key={item.className} className={`community-evidence-badge ${item.className}`}>{item.label}</span>
+        ))}
+      </div>
+      <p className="community-evidence-note">
+        Evidence type identifies who provided the information. Confidence describes the record supporting that label. “Verified Public” beside an owner or developer statement means the statement is publicly documented—not that its promised outcome has been independently verified.
+      </p>
+      <div className="community-protection-grid">
+        {profile.categories.map(category => {
+          const Icon = icons[category.id];
+          return (
+            <article key={category.id} className="community-protection-card">
+              <div className="community-protection-card-header">
+                <Icon size={17} />
+                <h5>{category.title}</h5>
+              </div>
+              <div className="community-protection-items">
+                {category.items.map((item, index) => {
+                  const evidence = COMMUNITY_EVIDENCE_CONFIG[item.evidenceType];
+                  return (
+                    <div key={index} className="community-protection-item">
+                      <div className="community-protection-item-header">
+                        <span className={`community-evidence-badge ${evidence.className}`}>{evidence.label}</span>
+                        <ConfidenceBadge level={item.confidence} />
+                      </div>
+                      <p>{item.text}</p>
+                      {item.source && (
+                        <div className="community-protection-source">
+                          Source: {item.source.label}{item.source.date ? ` (${item.source.date})` : ''}
+                          {item.source.url && (
+                            <a href={item.source.url} target="_blank" rel="noopener noreferrer" className="source-link">
+                              <ExternalLink size={10} />
+                            </a>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </article>
+          );
+        })}
+      </div>
+      <p className="community-protection-disclaimer">
+        Potential protections are options for investigation or enforceable approval conditions. They are not verified commitments and their effectiveness has not been established for this site.
+      </p>
+    </section>
+  );
+}
+
 // ── Classification badge ─────────────────────────────────────
 function ClassificationBadge({ site }: { site: CandidateSite }) {
   const colors = {
@@ -231,6 +312,8 @@ function ClassificationBadge({ site }: { site: CandidateSite }) {
 
 // ── Site detail panel ────────────────────────────────────────
 function SiteDetail({ site, onOpenSatellite }: { site: CandidateSite; onOpenSatellite: () => void }) {
+  const communityImpact = COMMUNITY_IMPACT_PROFILES.find(profile => profile.siteId === site.id);
+
   return (
     <div className="site-detail">
       <div className="site-detail-header">
@@ -250,6 +333,8 @@ function SiteDetail({ site, onOpenSatellite }: { site: CandidateSite; onOpenSate
 
       {/* Community & Environmental Overview */}
       <CommunityOverview overview={site.communityOverview} />
+
+      {communityImpact && <CommunityImpactProtection profile={communityImpact} />}
 
       {/* Core profile */}
       <div className="site-detail-section">
