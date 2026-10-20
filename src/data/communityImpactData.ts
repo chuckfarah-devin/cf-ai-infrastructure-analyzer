@@ -129,24 +129,24 @@ const desoto: CommunityImpactProfile = {
       title: 'Noise & Neighborhood Quiet',
       items: [
         {
-          text: 'The active proposal includes on-site natural-gas reciprocating generation, and public reporting has documented community concern about continuous industrial noise.',
+          text: 'On March 24, 2026 the Board of County Commissioners adopted Ordinance 2026-004 with conditions including a 55-dBA noise limit at 200 feet from all property lines, per the meeting minutes.',
           evidenceType: 'documented',
           confidence: 'verified',
-          source: { label: 'DeSoto County planning records; Suncoast Searchlight', date: '2025', url: 'https://suncoastsearchlight.org/desoto-county-data-center-florida/' },
+          source: { label: 'DeSoto County BOCC minutes, March 24, 2026', date: '2026', url: 'https://desotobocc.legistar1.com/desotobocc/meetings/2026/3/3776_M_Board_of_County_Commissioners_26-03-24_Meeting_Minutes.pdf' },
         },
         {
-          text: 'DCIP has stated that noise impacts would be mitigated, but specific measures and independently reviewed performance have not been published.',
+          text: 'DCIP has stated that noise impacts would be mitigated, but no equipment inventory, acoustic model, or post-opening monitoring requirement has been published.',
           evidenceType: 'developer-statement',
           confidence: 'verified',
           source: { label: 'DCIP public statements reported in local coverage', date: '2025', url: 'https://suncoastsearchlight.org/desoto-county-data-center-florida/' },
         },
         {
-          text: 'No verified ambient baseline, final equipment inventory, receptor analysis, or enforceable operating limit is available in the current research.',
+          text: 'The adopted limit binds at the improvement-plan stage; no ambient baseline, receptor analysis, or demonstrated operational compliance exists yet.',
           evidenceType: 'unresolved',
           confidence: 'unknown',
         },
         {
-          text: 'Potential conditions could require independent nighttime measurements, equipment-specific modeling, testing-hour restrictions, and post-opening compliance reports.',
+          text: 'Potential follow-on measures could require independent nighttime measurements, equipment-specific modeling, and post-opening compliance reporting for Phase 1 and any expansion.',
           evidenceType: 'potential-protection',
           confidence: 'illustrative',
         },
@@ -157,10 +157,16 @@ const desoto: CommunityImpactProfile = {
       title: 'Water Use & Protection',
       items: [
         {
-          text: 'County records and reporting identify limited water infrastructure, wetlands and surface waters in the broader proposal area, and unresolved cooling-water disposal questions.',
+          text: 'County records identify limited water infrastructure and wetlands/surface waters in the proposal area; the adopted moratorium ordinance lists water supply, reclaimed water, and wastewater capacity as unstudied countywide impacts.',
           evidenceType: 'documented',
           confidence: 'verified',
-          source: { label: 'DeSoto County planning records; Suncoast Searchlight', date: '2025', url: 'https://suncoastsearchlight.org/desoto-county-data-center-florida/' },
+          source: { label: 'DeSoto County Ordinance 2026-016, Legistar File 26-1906; Development Review Report', date: '2026', url: 'https://desotobocc.legistar.com/LegislationDetail.aspx?GUID=8499016F-34CC-40A8-8083-74099AD0DEFB&ID=8142423&Options=&Search=' },
+        },
+        {
+          text: 'At the March 24, 2026 hearing the board directed DCIP to explore reclaimed-water feasibility with the City of Arcadia and return findings at the improvement-plan stage — a directive to investigate, not proof of availability or use.',
+          evidenceType: 'documented',
+          confidence: 'verified',
+          source: { label: 'DeSoto County BOCC minutes, March 24, 2026', date: '2026', url: 'https://desotobocc.legistar1.com/desotobocc/meetings/2026/3/3776_M_Board_of_County_Commissioners_26-03-24_Meeting_Minutes.pdf' },
         },
         {
           text: 'DCIP has stated that reclaimed wastewater and wells could supply cooling and has described closed-loop cooling.',
@@ -169,7 +175,7 @@ const desoto: CommunityImpactProfile = {
           source: { label: 'DCIP public materials and statements', date: '2025', url: 'https://suncoastsearchlight.org/desoto-county-data-center-florida/' },
         },
         {
-          text: 'Permitted source capacity, withdrawal, consumption, well yield, reclaimed-water availability, drought response, and wastewater disposition remain unresolved.',
+          text: 'Permitted source capacity, withdrawal volume, consumption, well yield, reclaimed-water availability, drought response, and wastewater disposition remain unresolved — no SWFWMD permit is documented.',
           evidenceType: 'unresolved',
           confidence: 'unknown',
         },
@@ -185,13 +191,19 @@ const desoto: CommunityImpactProfile = {
       title: 'Lighting & Visual Impact',
       items: [
         {
-          text: 'The initial phase reuses a former industrial site, while the proposed expansion extends into a broader rural agricultural setting.',
+          text: 'Approved Phase 1 (34.22 acres) reuses the former plant site; two pending applications totaling 828.05 acres extend into a broader rural agricultural setting and are not approved.',
           evidenceType: 'documented',
           confidence: 'verified',
-          source: { label: 'DeSoto County planning records; Suncoast Searchlight', date: '2025', url: 'https://suncoastsearchlight.org/desoto-county-data-center-florida/' },
+          source: { label: 'DeSoto County Data Center Applications page', date: '2026', url: 'https://desotobocc.com/431/Data-Center-Applications' },
         },
         {
-          text: 'No independently verified viewshed, nighttime photometric plan, equipment-screening plan, or binding native-landscape commitment has been identified.',
+          text: 'Adopted conditions per the March 24, 2026 minutes require a photometric plan showing no light trespass and perimeter landscape buffering — improvement-plan requirements, not demonstrated nighttime performance.',
+          evidenceType: 'documented',
+          confidence: 'verified',
+          source: { label: 'DeSoto County BOCC minutes, March 24, 2026', date: '2026', url: 'https://desotobocc.legistar1.com/desotobocc/meetings/2026/3/3776_M_Board_of_County_Commissioners_26-03-24_Meeting_Minutes.pdf' },
+        },
+        {
+          text: 'No independently verified viewshed analysis, published photometric design, or operational monitoring exists yet.',
           evidenceType: 'unresolved',
           confidence: 'unknown',
         },
@@ -207,10 +219,16 @@ const desoto: CommunityImpactProfile = {
       title: 'Traffic & Community Infrastructure',
       items: [
         {
-          text: 'The initial site is accessed from NE Roan Street, and the proposed project scale expanded substantially beyond the original plant footprint.',
+          text: 'The initial site is accessed from NE Roan Street; the two pending expansion applications would grow DCIP-related plans from the 34.22 approved acres to roughly 862 acres total.',
           evidenceType: 'documented',
           confidence: 'verified',
-          source: { label: 'DeSoto County planning records; DeSoto County Plant site listing', date: '2025', url: 'https://www.desotocountyplant.com/' },
+          source: { label: 'DeSoto County Data Center Applications page', date: '2026', url: 'https://desotobocc.com/431/Data-Center-Applications' },
+        },
+        {
+          text: 'A one-year countywide data-center application moratorium was adopted July 28, 2026 (Ordinance 2026-016), but it exempts the approved Phase 1 project and both pending applications, which continue under normal procedures.',
+          evidenceType: 'documented',
+          confidence: 'verified',
+          source: { label: 'DeSoto County Ordinance 2026-016, Legistar File 26-1906', date: '2026', url: 'https://desotobocc.legistar.com/LegislationDetail.aspx?GUID=8499016F-34CC-40A8-8083-74099AD0DEFB&ID=8142423&Options=&Search=' },
         },
         {
           text: 'Published tax and employment figures are county or developer projections, not guaranteed community outcomes.',
@@ -219,7 +237,7 @@ const desoto: CommunityImpactProfile = {
           source: { label: 'County estimates and DCIP public materials reported in coverage', date: '2025–2026', url: 'https://suncoastsearchlight.org/desoto-county-data-center-florida/' },
         },
         {
-          text: 'Construction traffic, road capacity, emergency response, utility-upgrade responsibility, tax terms, and enforceable community benefits remain unresolved.',
+          text: 'Construction traffic, road capacity, emergency response, utility-upgrade responsibility, tax terms, and enforceable community benefits remain unresolved; expansion hearings are pending.',
           evidenceType: 'unresolved',
           confidence: 'unknown',
         },
