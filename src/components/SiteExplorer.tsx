@@ -344,8 +344,8 @@ function SiteDetail({
         </button>
         {facilityVision && (
           <button type="button" className="facility-vision-btn" onClick={onOpenVision}>
-            <Building2 size={16} />
-            Explore Responsible Facility Vision
+            <Lightbulb size={16} />
+            Explore Responsible Design Vision
           </button>
         )}
       </div>

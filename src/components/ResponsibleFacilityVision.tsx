@@ -4,16 +4,20 @@ import {
   CheckCircle,
   CircleDashed,
   ExternalLink,
+  FileText,
   HelpCircle,
   Info,
   Layers,
   MapPin,
   Shield,
+  Sprout,
+  Sun,
   TreePine,
 } from 'lucide-react';
 import type { CandidateSite } from '../data/siteExplorerData';
 import {
   getFacilityVisionProfile,
+  type FacilityVisionEvidenceNote,
   type FacilityVisionPerspective,
 } from '../data/facilityVisionData';
 
@@ -480,21 +484,250 @@ function FacilityScene() {
   );
 }
 
+function SolarPanel({ x, y, scale = 1 }: { x: number; y: number; scale?: number }) {
+  return (
+    <g transform={`translate(${x} ${y}) scale(${scale})`}>
+      <path d="M8 52 L22 78 M82 52 L96 78" stroke="#52656c" strokeWidth="6" strokeLinecap="round" />
+      <polygon points="0,20 76,0 112,14 37,36" fill="#193f55" />
+      <polygon points="5,21 74,3 105,15 38,34" fill="#2e6f8f" />
+      <path d="M18 26 L89 8 M34 30 L100 13 M15 22 L50 34 M38 17 L72 29 M61 11 L93 22" stroke="#93bdcc" strokeWidth="1.5" opacity="0.78" />
+      <path d="M0 20 L37 36 L112 14" fill="none" stroke="#0e2d3d" strokeWidth="3" />
+    </g>
+  );
+}
+
+function SolarField({ x, y, rows, panels, spacingX, spacingY }: {
+  x: number;
+  y: number;
+  rows: number;
+  panels: number;
+  spacingX: number;
+  spacingY: number;
+}) {
+  return (
+    <g>
+      {Array.from({ length: rows }, (_, row) => (
+        <g key={row} opacity={1 - row * 0.06}>
+          {Array.from({ length: panels }, (_, col) => (
+            <SolarPanel
+              key={col}
+              x={x + col * spacingX + row * 28}
+              y={y + row * spacingY}
+              scale={1 - row * 0.08}
+            />
+          ))}
+        </g>
+      ))}
+    </g>
+  );
+}
+
+function IndiantownEnergyReuseScene() {
+  return (
+    <svg className="vision-scene" viewBox="0 0 960 540" role="img" aria-labelledby="it-reuse-title it-reuse-desc">
+      <title id="it-reuse-title">Coal-to-solar reuse illustrative concept</title>
+      <desc id="it-reuse-desc">
+        Symbolic illustration showing a faded industrial silhouette, solar arrays, and grid infrastructure. It does not depict parcel boundaries or place Monarch Solar on the former plant footprint.
+      </desc>
+      <defs>
+        <linearGradient id="itr-sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#e5f0f4" />
+          <stop offset="62%" stopColor="#f2eadb" />
+          <stop offset="100%" stopColor="#d9d0bc" />
+        </linearGradient>
+        <linearGradient id="itr-land" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#8ea477" />
+          <stop offset="54%" stopColor="#b2b886" />
+          <stop offset="100%" stopColor="#8ea477" />
+        </linearGradient>
+      </defs>
+
+      <rect width="960" height="540" fill="url(#itr-sky)" />
+      <circle cx="746" cy="88" r="42" fill="#f6c86e" opacity="0.82" />
+      <circle cx="746" cy="88" r="60" fill="#f6c86e" opacity="0.14" />
+
+      <path d="M0 281 C154 258 323 270 479 292 C641 315 799 289 960 303 L960 540 L0 540 Z" fill="#a6b184" />
+      <path d="M0 353 C174 326 337 342 514 362 C693 382 820 361 960 374 L960 540 L0 540 Z" fill="url(#itr-land)" />
+
+      {/* Former industrial silhouette, intentionally symbolic and unlocated */}
+      <g opacity="0.34">
+        <rect x="72" y="178" width="146" height="90" rx="3" fill="#70706d" />
+        <rect x="101" y="112" width="30" height="156" rx="10" fill="#6e6f70" />
+        <rect x="148" y="137" width="24" height="131" rx="9" fill="#777879" />
+        <path d="M218 188 H300 L326 268 H218 Z" fill="#7b7a75" />
+        <path d="M92 111 C117 84 153 88 176 111" fill="none" stroke="#c7d2d0" strokeWidth="9" strokeLinecap="round" />
+      </g>
+      <g className="vision-scene-note">
+        <rect x="55" y="280" width="258" height="31" rx="7" />
+        <text x="68" y="301">Former industrial use — symbolic</text>
+      </g>
+
+      {/* Reused energy infrastructure, symbolic */}
+      <g transform="translate(686 220)">
+        <path d="M62 0 L12 132 M62 0 L112 132 M31 56 H93 M20 91 H104 M12 132 H112" fill="none" stroke="#52636a" strokeWidth="6" strokeLinecap="round" />
+        <path d="M20 55 C-37 72 -73 94 -110 131 M103 55 C170 73 207 96 250 137" fill="none" stroke="#52636a" strokeWidth="3" opacity="0.72" />
+      </g>
+      <g transform="translate(566 292)">
+        <rect x="0" y="0" width="82" height="64" rx="6" fill="#758489" />
+        <rect x="12" y="-12" width="18" height="16" fill="#455961" />
+        <rect x="51" y="-12" width="18" height="16" fill="#455961" />
+        <path d="M13 18 H70 M13 32 H70 M13 46 H70" stroke="#b8c6c8" strokeWidth="4" />
+      </g>
+
+      {/* Solar generation foreground */}
+      <SolarField x={304} y={318} rows={3} panels={4} spacingX={124} spacingY={63} />
+      <SolarField x={87} y={371} rows={2} panels={3} spacingX={135} spacingY={70} />
+
+      {/* Transition marker */}
+      <g>
+        <path d="M329 196 C423 145 509 145 602 195" fill="none" stroke="#df9e39" strokeWidth="7" strokeLinecap="round" strokeDasharray="2 14" />
+        <path d="M590 184 L612 199 L585 211 Z" fill="#df9e39" />
+        <rect x="370" y="122" width="186" height="34" rx="7" fill="rgba(255,255,255,0.78)" stroke="rgba(150,105,45,0.32)" />
+        <text x="385" y="144" fill="#7a571f" fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" fontSize="13" fontWeight="750">
+          Energy-site reuse pathway
+        </text>
+      </g>
+
+      {/* Native edge and access path */}
+      <path d="M0 458 C170 432 334 452 493 470 C670 490 821 469 960 481 L960 540 L0 540 Z" fill="#5f7d5b" />
+      <path d="M57 540 C170 499 306 482 446 484 C586 486 733 501 905 469" fill="none" stroke="#c6b998" strokeWidth="31" opacity="0.72" />
+      <path d="M57 540 C170 499 306 482 446 484 C586 486 733 501 905 469" fill="none" stroke="#796f5d" strokeWidth="3" strokeDasharray="9 13" opacity="0.55" />
+      <NativeTree x={61} y={462} scale={0.75} />
+      <NativeTree x={237} y={471} scale={0.58} canopy="#4d835b" />
+      <PalmTree x={853} y={466} scale={0.72} lean={-6} />
+      <ReedCluster x={190} y={481} />
+      <ReedCluster x={780} y={474} />
+
+      <g className="vision-scene-note landscape-note">
+        <rect x="536" y="486" width="404" height="34" rx="7" />
+        <text x="550" y="502">Monarch documented southwest of plant</text>
+        <text x="550" y="516">Array placement here is symbolic only</text>
+      </g>
+
+      <ConceptBadge />
+    </svg>
+  );
+}
+
+function IndiantownLandscapeStewardshipScene() {
+  return (
+    <svg className="vision-scene" viewBox="0 0 960 540" role="img" aria-labelledby="it-steward-title it-steward-desc">
+      <title id="it-steward-title">Solar landscape stewardship illustrative concept</title>
+      <desc id="it-steward-desc">
+        Symbolic illustration of native groundcover, screening, stormwater planting, and a possible habitat connection around solar infrastructure. It does not document restoration work.
+      </desc>
+      <defs>
+        <linearGradient id="its-sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#e6f2ee" />
+          <stop offset="63%" stopColor="#f2ead9" />
+          <stop offset="100%" stopColor="#d6c7ae" />
+        </linearGradient>
+        <linearGradient id="its-ground" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#93a86f" />
+          <stop offset="55%" stopColor="#afb475" />
+          <stop offset="100%" stopColor="#7d9b65" />
+        </linearGradient>
+      </defs>
+
+      <rect width="960" height="540" fill="url(#its-sky)" />
+      <path d="M0 266 C166 236 339 255 500 279 C670 304 812 278 960 294 L960 540 L0 540 Z" fill="#a4ac77" />
+      <path d="M0 342 C184 315 347 335 527 357 C707 379 824 354 960 370 L960 540 L0 540 Z" fill="url(#its-ground)" />
+
+      {/* Distant solar field */}
+      <SolarField x={360} y={206} rows={3} panels={4} spacingX={116} spacingY={52} />
+      <SolarField x={166} y={246} rows={2} panels={3} spacingX={119} spacingY={56} />
+
+      {/* Screened but visible electrical equipment */}
+      <g transform="translate(743 278)">
+        <rect x="-8" y="-7" width="143" height="91" rx="7" fill="#9a8e75" opacity="0.35" />
+        <rect x="8" y="8" width="92" height="58" rx="5" fill="#68777d" />
+        <path d="M20 23 H88 M20 36 H88 M20 49 H88" stroke="#b8c3c6" strokeWidth="4" />
+        <rect x="105" y="18" width="21" height="49" fill="#54676e" />
+        <path d="M-5 -3 V79 M13 -3 V79 M112 -3 V79 M130 -3 V79" stroke="#7c6c54" strokeWidth="4" opacity="0.72" />
+      </g>
+      <g className="vision-callout">
+        <path d="M787 280 L777 242" />
+        <rect x="669" y="217" width="209" height="24" rx="5" />
+        <text x="681" y="234">Electrical equipment remains visible</text>
+      </g>
+
+      {/* Native landscape buffer */}
+      <path d="M0 411 C126 386 268 399 414 421 C570 445 742 416 960 432 L960 540 L0 540 Z" fill="#66865c" />
+      <path d="M0 457 C153 431 323 452 489 469 C664 487 810 463 960 476 L960 540 L0 540 Z" fill="#526f4f" />
+      <NativeTree x={75} y={427} scale={0.8} />
+      <NativeTree x={145} y={449} scale={0.58} canopy="#4b8159" />
+      <NativeTree x={611} y={445} scale={0.6} canopy="#5a8354" />
+      <PalmTree x={903} y={435} scale={0.78} lean={-4} />
+      {Array.from({ length: 24 }, (_, i) => (
+        <g key={i} transform={`translate(${36 + i * 37} ${456 + (i % 4) * 8})`}>
+          <path d="M0 21 C-5 9 -2 2 4 -7 C7 5 9 11 0 21" fill="#315e3f" />
+          <circle cx="-4" cy="8" r="3" fill={i % 3 === 0 ? '#d89b5f' : '#e7c46b'} />
+          <circle cx="5" cy="4" r="2.5" fill={i % 2 === 0 ? '#c97266' : '#eee0a3'} />
+        </g>
+      ))}
+
+      {/* Conceptual stormwater planting */}
+      <path d="M96 515 C224 475 370 486 513 503 C650 519 787 509 930 478" fill="none" stroke="#b7b18b" strokeWidth="44" opacity="0.9" />
+      <path d="M96 515 C224 475 370 486 513 503 C650 519 787 509 930 478" fill="none" stroke="#668aa0" strokeWidth="10" opacity="0.55" />
+      <ReedCluster x={141} y={493} />
+      <ReedCluster x={328} y={484} />
+      <ReedCluster x={532} y={502} />
+      <ReedCluster x={742} y={493} />
+      <ReedCluster x={881} y={474} />
+
+      {/* Symbolic habitat question, not mapped corridor */}
+      <path d="M61 322 C138 368 208 404 294 440 C378 475 456 493 558 506" fill="none" stroke="#3f7d55" strokeWidth="5" strokeDasharray="10 12" opacity="0.58" />
+      <g className="vision-callout">
+        <path d="M132 346 L96 300" />
+        <rect x="34" y="275" width="209" height="24" rx="5" />
+        <text x="46" y="292">Possible habitat connection — TBD</text>
+      </g>
+      <g className="vision-callout">
+        <path d="M469 495 L509 455" />
+        <rect x="488" y="430" width="211" height="24" rx="5" />
+        <text x="500" y="447">Stormwater planting concept only</text>
+      </g>
+
+      <g className="vision-scene-note landscape-note">
+        <rect x="534" y="486" width="404" height="34" rx="7" />
+        <text x="548" y="502">Design principles, not documented restoration</text>
+        <text x="548" y="516">Ecology, drainage, and contamination require review</text>
+      </g>
+
+      <ConceptBadge />
+    </svg>
+  );
+}
+
 function VisionScene({ perspective }: { perspective: FacilityVisionPerspective }) {
-  switch (perspective.id) {
-    case 'neighborhood':
+  switch (perspective.sceneId) {
+    case 'st-johns-neighborhood':
       return <NeighborhoodScene />;
-    case 'landscape':
+    case 'st-johns-landscape':
       return <LandscapeScene />;
-    case 'facility':
+    case 'st-johns-facility':
       return <FacilityScene />;
+    case 'indiantown-energy-reuse':
+      return <IndiantownEnergyReuseScene />;
+    case 'indiantown-landscape-stewardship':
+      return <IndiantownLandscapeStewardshipScene />;
   }
 }
 
-const PERSPECTIVE_ICONS: Record<FacilityVisionPerspective['id'], typeof TreePine> = {
-  neighborhood: Shield,
+const PERSPECTIVE_ICONS: Record<FacilityVisionPerspective['icon'], typeof TreePine> = {
+  community: Shield,
   landscape: TreePine,
-  facility: Building2,
+  infrastructure: Building2,
+  energy: Sun,
+  stewardship: Sprout,
+  evidence: FileText,
+};
+
+const EVIDENCE_LABELS: Record<FacilityVisionEvidenceNote['type'], string> = {
+  documented: 'Documented Public Record',
+  'developer-statement': 'Owner / Developer Statement',
+  'potential-protection': 'Potential Protection',
+  unresolved: 'Unresolved Question',
 };
 
 export default function ResponsibleFacilityVision({ site, onBack, onOpenSatellite }: ResponsibleFacilityVisionProps) {
@@ -541,39 +774,60 @@ export default function ResponsibleFacilityVision({ site, onBack, onOpenSatellit
         <div>
           <strong>Illustrative Concept — Not a Site Plan</strong>
           <span>
-            These architectural vignettes explore design principles only. They do not show parcel boundaries, building placement,
+            These concept scenes explore design principles only. They do not show parcel boundaries, building placement,
             buildable land, environmental suitability, an approved architectural style, or a development proposal.
           </span>
         </div>
       </div>
 
       <div className="facility-vision-intro">
-        <div>
-          <Building2 size={18} />
-          <div>
-            <strong>Architectural character</strong>
-            <span>Warm materials, shaded overhangs, articulated facade sections, fins, and architectural screening reduce generic warehouse-like massing.</span>
-          </div>
-        </div>
-        <div>
-          <TreePine size={18} />
-          <div>
-            <strong>Landscape integration</strong>
-            <span>Native planting and symbolic habitat connections are design ideas only; environmental suitability and locations require separate verification.</span>
-          </div>
-        </div>
-        <div>
-          <Shield size={18} />
-          <div>
-            <strong>Practical infrastructure</strong>
-            <span>Cooling equipment, electrical systems, service access, and security are acknowledged rather than hidden behind decorative landscaping.</span>
-          </div>
-        </div>
+        {profile.introNotes.map(note => {
+          const Icon = PERSPECTIVE_ICONS[note.icon];
+          return (
+            <div key={note.title}>
+              <Icon size={18} />
+              <div>
+                <strong>{note.title}</strong>
+                <span>{note.text}</span>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
-      <div className="facility-vision-gallery">
+      {profile.evidenceNotes && profile.evidenceNotes.length > 0 && (
+        <div className="facility-vision-evidence">
+          <div className="facility-vision-evidence-heading">
+            <FileText size={16} />
+            <div>
+              <strong>Record basis &amp; unresolved questions</strong>
+              <span>These notes distinguish public evidence from owner statements and concepts requiring verification.</span>
+            </div>
+          </div>
+          <div className="facility-vision-evidence-grid">
+            {profile.evidenceNotes.map(note => (
+              <div key={`${note.type}-${note.text}`} className="vision-evidence-note">
+                <span className={`vision-evidence-badge ${note.type}`}>{EVIDENCE_LABELS[note.type]}</span>
+                <p>{note.text}</p>
+                {note.source && (
+                  <span className="vision-evidence-source">
+                    {note.source.label}{note.source.date ? ` · ${note.source.date}` : ''}
+                    {note.source.url && (
+                      <a href={note.source.url} target="_blank" rel="noreferrer">
+                        Public source <ExternalLink size={10} />
+                      </a>
+                    )}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className={`facility-vision-gallery layout-${profile.galleryLayout}`}>
         {profile.perspectives.map(perspective => {
-          const Icon = PERSPECTIVE_ICONS[perspective.id];
+          const Icon = PERSPECTIVE_ICONS[perspective.icon];
           return (
             <article key={perspective.id} className="facility-vision-card">
               <div className="facility-vision-card-header">
@@ -619,7 +873,7 @@ export default function ResponsibleFacilityVision({ site, onBack, onOpenSatellit
         <Info size={16} />
         <p>
           These concept scenes are intentionally symbolic and unscaled. They do not establish that previously disturbed land is buildable or suitable,
-          and they are separate from the verified wetlands, flood, conservation, aquatic-preserve, and shoreline GIS layers. Real facility planning would
+          and they are separate from the verified wetlands, flood, conservation, aquatic-preserve, and shoreline GIS layers. Real site evaluation would
           require parcel research, ecological and contamination studies, engineering design, utility analysis, community input, and applicable approvals.
         </p>
       </div>

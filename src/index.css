@@ -2443,7 +2443,7 @@ code {
 .facility-vision-notice span { margin-top: 0.12rem; font-size: 0.7rem; line-height: 1.45; }
 .facility-vision-intro {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
   gap: 0.65rem;
   margin-bottom: 0.9rem;
 }
@@ -2463,11 +2463,82 @@ code {
 .facility-vision-intro strong { color: #3c322b; font-size: 0.74rem; }
 .facility-vision-intro span { margin-top: 0.12rem; color: #6f6258; font-size: 0.66rem; line-height: 1.4; }
 
+.facility-vision-evidence {
+  margin-bottom: 0.9rem;
+  padding: 0.7rem;
+  border: 1px solid #d8cbbb;
+  border-radius: 8px;
+  background: rgba(255, 250, 241, 0.82);
+}
+.facility-vision-evidence-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0.55rem;
+  color: #4f4239;
+}
+.facility-vision-evidence-heading svg { flex-shrink: 0; margin-top: 1px; }
+.facility-vision-evidence-heading strong,
+.facility-vision-evidence-heading span { display: block; }
+.facility-vision-evidence-heading strong { font-size: 0.74rem; }
+.facility-vision-evidence-heading > div > span { margin-top: 0.12rem; color: #706258; font-size: 0.65rem; }
+.facility-vision-evidence-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.55rem;
+}
+.vision-evidence-note {
+  min-width: 0;
+  padding: 0.58rem;
+  border: 1px solid #e2d8cc;
+  border-radius: 6px;
+  background: white;
+}
+.vision-evidence-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.14rem 0.42rem;
+  border-radius: 999px;
+  font-size: 0.59rem;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: 0.25px;
+}
+.vision-evidence-badge.documented { background: #dcfce7; color: #166534; }
+.vision-evidence-badge.developer-statement { background: #e0f2fe; color: #075985; }
+.vision-evidence-badge.potential-protection { background: #fef3c7; color: #92400e; }
+.vision-evidence-badge.unresolved { background: #f1f5f9; color: #475569; }
+.vision-evidence-note p {
+  margin: 0.38rem 0 0;
+  color: #4f463f;
+  font-size: 0.65rem;
+  line-height: 1.45;
+}
+.vision-evidence-source {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.38rem;
+  color: #6b7280;
+  font-size: 0.59rem;
+}
+.vision-evidence-source a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.16rem;
+  color: #1d4ed8;
+  font-weight: 650;
+  text-decoration: none;
+}
+.vision-evidence-source a:hover { text-decoration: underline; }
+
 .facility-vision-gallery {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.8rem;
 }
+.facility-vision-gallery.layout-two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .facility-vision-card {
   min-width: 0;
   overflow: hidden;
