@@ -1038,6 +1038,240 @@ function DesotoFacilityScene() {
   );
 }
 
+function MonitoringWell({ x, y, label = 'MW' }: { x: number; y: number; label?: string }) {
+  return (
+    <g transform={`translate(${x} ${y})`}>
+      <rect x="-3" y="-34" width="6" height="34" rx="2" fill="#cbd5da" />
+      <rect x="-5" y="-38" width="10" height="6" rx="2" fill="#5d7078" />
+      <rect x="-6" y="0" width="12" height="4" rx="2" fill="#9aa6ab" />
+      <text x="0" y="-44" textAnchor="middle" fill="#48606b" fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" fontSize="11" fontWeight="700">{label}</text>
+    </g>
+  );
+}
+
+function PostedSign({ x, y }: { x: number; y: number }) {
+  return (
+    <g transform={`translate(${x} ${y})`}>
+      <rect x="-2.5" y="-34" width="5" height="34" rx="2" fill="#5f6b72" />
+      <rect x="-24" y="-56" width="48" height="26" rx="3" fill="#f6efe0" stroke="#8a6f4e" strokeWidth="2" />
+      <rect x="-18" y="-49" width="36" height="4" rx="2" fill="#a7483f" />
+      <rect x="-18" y="-41" width="24" height="3" rx="1.5" fill="#8a8177" />
+    </g>
+  );
+}
+
+function TreatmentSkid({ x, y }: { x: number; y: number }) {
+  return (
+    <g transform={`translate(${x} ${y})`}>
+      <rect x="0" y="26" width="120" height="58" rx="6" fill="#7d8b92" />
+      <rect x="10" y="10" width="46" height="34" rx="5" fill="#5f727b" />
+      <circle cx="33" cy="27" r="11" fill="#46565e" />
+      <rect x="66" y="18" width="44" height="24" rx="4" fill="#6a7d85" />
+      <path d="M12 50 H108 M12 62 H98 M12 74 H104" stroke="#b9c6ca" strokeWidth="4" opacity="0.85" />
+      <rect x="104" y="-18" width="8" height="44" fill="#4d5e66" />
+      <ellipse cx="108" cy="-20" rx="7" ry="3" fill="#8ea0a8" />
+    </g>
+  );
+}
+
+function EscambiaRemedyFirstScene() {
+  return (
+    <svg className="vision-scene" viewBox="0 0 960 540" role="img" aria-labelledby="er-vision-title er-vision-desc">
+      <title id="er-vision-title">Illustrative remedy-first stewardship concept</title>
+      <desc id="er-vision-desc">
+        Symbolic view of soil containment, monitoring wells, controlled access, and ongoing groundwater treatment at a Superfund site. No actual cell geometry is depicted and remediation is ongoing.
+      </desc>
+      <defs>
+        <linearGradient id="er-sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#8fc0e4" />
+          <stop offset="0.62" stopColor="#dcecf5" />
+          <stop offset="1" stopColor="#efe8d6" />
+        </linearGradient>
+      </defs>
+
+      <rect width="960" height="540" fill="url(#er-sky)" />
+
+      {/* Distant industrial context, faded */}
+      <g opacity="0.3">
+        <rect x="40" y="212" width="150" height="70" rx="3" fill="#7c7f7a" />
+        <rect x="66" y="168" width="18" height="114" rx="6" fill="#75787a" />
+        <rect x="106" y="182" width="16" height="100" rx="6" fill="#7d807c" />
+        <rect x="800" y="228" width="130" height="54" rx="3" fill="#83857f" />
+        <path d="M800 228 L830 198 H900 L930 228" fill="#7a7d78" />
+      </g>
+
+      {/* Ground */}
+      <path d="M0 300 C150 278 310 292 470 308 C640 326 800 300 960 318 L960 540 L0 540 Z" fill="#8aa06f" />
+      <path d="M0 380 C160 358 330 376 500 392 C680 410 820 388 960 398 L960 540 L0 540 Z" fill="#a3b483" />
+
+      {/* Symbolic capped containment mound — generic form, not actual geometry */}
+      <path d="M180 400 C230 296 380 258 520 262 C660 266 760 320 790 400 C790 430 180 430 180 400 Z" fill="#7fae6a" />
+      <path d="M196 392 C250 306 385 276 515 280 C640 284 730 330 768 392" fill="none" stroke="#5f9155" strokeWidth="6" opacity="0.6" />
+      <path d="M230 368 C320 322 470 312 590 330 M270 396 C380 356 540 350 660 372" fill="none" stroke="#6b9a5e" strokeWidth="4" opacity="0.5" />
+
+      {/* Perimeter fence with signage */}
+      {Array.from({ length: 16 }, (_, i) => {
+        const x = 150 + i * 44;
+        return <path key={i} d={`M${x} 306 V392`} stroke="#7d8a90" strokeWidth="3" opacity="0.85" />;
+      })}
+      <path d="M150 316 C320 292 620 288 810 330 M150 330 C320 306 620 302 810 344" fill="none" stroke="#93a1a7" strokeWidth="2.5" opacity="0.8" />
+      <PostedSign x={230} y={398} />
+      <PostedSign x={690} y={398} />
+
+      {/* Monitoring wells */}
+      <MonitoringWell x={306} y={376} />
+      <MonitoringWell x={520} y={352} />
+      <MonitoringWell x={648} y={382} />
+
+      {/* OU-2 treatment skid and symbolic subsurface zone */}
+      <TreatmentSkid x={700} y={298} />
+      <path d="M640 452 C700 434 780 434 850 450 C880 456 890 468 852 476 C780 490 700 488 648 474 C612 464 608 460 640 452 Z" fill="#5e95a3" opacity="0.5" stroke="#3f707c" strokeWidth="3" strokeDasharray="10 8" />
+      <g className="vision-callout">
+        <path d="M758 296 L740 252" />
+        <rect x="618" y="227" width="246" height="24" rx="5" />
+        <text x="630" y="244">Active OU-2 groundwater remediation</text>
+      </g>
+
+      {/* No-groundwater symbol */}
+      <g transform="translate(120 330)">
+        <circle cx="0" cy="0" r="26" fill="rgba(255,255,255,0.82)" stroke="#a7483f" strokeWidth="4" />
+        <path d="M0 -10 C-7 0 -10 6 -10 12 C-10 20 -4 24 0 24 C4 24 10 20 10 12 C10 6 7 0 0 -10" fill="#4d7f96" />
+        <path d="M-17 -17 L17 17" stroke="#a7483f" strokeWidth="4.5" />
+      </g>
+      <g className="vision-scene-note">
+        <rect x="52" y="368" rx="6" width="240" height="28" />
+        <text x="65" y="387">No groundwater use or new wells</text>
+      </g>
+
+      {/* Callouts */}
+      <g className="vision-callout">
+        <path d="M470 282 L430 232" />
+        <rect x="316" y="207" width="178" height="24" rx="5" />
+        <text x="328" y="224">Capped containment area</text>
+      </g>
+      <g className="vision-callout">
+        <path d="M306 340 L262 314" />
+        <rect x="120" y="288" width="150" height="24" rx="5" />
+        <text x="132" y="305">Monitoring wells</text>
+      </g>
+      <g className="vision-callout">
+        <path d="M232 362 L196 330" />
+        <rect x="98" y="416" width="196" height="24" rx="5" />
+        <text x="110" y="433">Controlled access &amp; signage</text>
+      </g>
+
+      {/* Native edge planting at margins only */}
+      <ReedCluster x={60} y={522} scale={0.9} />
+      <ReedCluster x={350} y={528} scale={0.75} />
+      <ReedCluster x={880} y={520} scale={0.85} />
+      <NativeTree x={70} y={420} scale={0.6} />
+      <NativeTree x={905} y={420} scale={0.62} canopy="#4d8a5b" />
+      <PalmTree x={868} y={452} scale={0.6} lean={-5} />
+
+      <g className="vision-scene-note landscape-note">
+        <rect x="470" y="500" rx="6" width="466" height="28" />
+        <text x="483" y="519">Remedy elements symbolic — actual footprints in verified records</text>
+      </g>
+      <ConceptBadge />
+    </svg>
+  );
+}
+
+function EscambiaConditionalReuseScene() {
+  return (
+    <svg className="vision-scene" viewBox="0 0 960 540" role="img" aria-labelledby="ec-vision-title ec-vision-desc">
+      <title id="ec-vision-title">Illustrative conditional commercial reuse concept</title>
+      <desc id="ec-vision-desc">
+        Hypothetical generic commercial architecture alongside a separately depicted protected remedy area. No parcel is identified as buildable, approved, or unconstrained.
+      </desc>
+      <defs>
+        <linearGradient id="ec-sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#86bcdf" />
+          <stop offset="0.6" stopColor="#d9edf8" />
+          <stop offset="1" stopColor="#f1e9d8" />
+        </linearGradient>
+        <pattern id="ec-masonry" width="24" height="16" patternUnits="userSpaceOnUse">
+          <rect width="24" height="16" fill="#b98d63" />
+          <path d="M0 0 H24 M0 8 H24 M8 0 V8 M18 8 V16" stroke="#966f4f" strokeWidth="0.7" opacity="0.48" />
+        </pattern>
+      </defs>
+
+      <rect width="960" height="540" fill="url(#ec-sky)" />
+
+      {/* Background field and protected remedy area, kept separate */}
+      <path d="M0 306 C140 284 260 296 380 310 C540 328 700 300 960 322 L960 540 L0 540 Z" fill="#9cb27e" />
+      <path d="M560 300 C650 268 790 268 880 292 C920 302 945 310 960 316 L960 430 C860 418 700 420 580 428 C540 430 540 330 560 300 Z" fill="#7fae6a" />
+      <path d="M560 300 C650 268 790 268 880 292 C920 302 945 310 960 316" fill="none" stroke="#5f9155" strokeWidth="5" opacity="0.55" />
+      {Array.from({ length: 9 }, (_, i) => (
+        <path key={i} d={`M${560 + i * 44} ${300 + (i % 3) * 2} V368`} stroke="#7d8a90" strokeWidth="3" opacity="0.85" />
+      ))}
+      <path d="M556 312 C660 290 830 288 958 322 M556 326 C660 304 830 302 958 336" fill="none" stroke="#93a1a7" strokeWidth="2.5" opacity="0.8" />
+      <PostedSign x={600} y={368} />
+      <MonitoringWell x={760} y={330} />
+      <MonitoringWell x={868} y={344} />
+
+      {/* Generic commercial frontage — hypothetical, clearly separate from remedy area */}
+      <g transform="translate(90 170)">
+        <polygon points="0,80 60,58 224,58 262,80" fill="#806b57" />
+        <rect x="16" y="80" width="216" height="140" rx="4" fill="#d8d1c1" />
+        <rect x="16" y="158" width="216" height="62" fill="url(#ec-masonry)" />
+        <rect x="32" y="96" width="184" height="46" fill="#354f59" />
+        <FinArray x={40} y={90} count={14} width={8} gap={6.8} height={58} color="#d4c7b0" accent="#9a734e" />
+        <path d="M12 144 H236 L222 158 H26 Z" fill="#7a624f" />
+        <rect x="80" y="166" width="52" height="54" rx="3" fill="#293f48" />
+      </g>
+      <g transform="translate(368 196)">
+        <polygon points="0,64 48,44 190,44 224,64" fill="#75604c" />
+        <rect x="14" y="64" width="188" height="112" rx="4" fill="#d9d4c7" />
+        <rect x="14" y="128" width="188" height="48" fill="url(#ec-masonry)" />
+        <rect x="28" y="78" width="160" height="36" fill="#344f5c" />
+        <FinArray x={36} y={72} count={12} width={7} gap={6.5} height={48} color="#ded1b8" accent="#a77a50" />
+        <path d="M10 114 H206 L194 126 H22 Z" fill="#7c6753" />
+      </g>
+
+      {/* Street frontage, walk, and shallow-rooted landscaping */}
+      <path d="M0 396 C180 376 340 392 500 406 C660 420 820 404 960 414 L960 540 L0 540 Z" fill="#cfc8ba" />
+      <path d="M0 470 C200 452 420 468 640 480 C800 490 900 480 960 484 L960 540 L0 540 Z" fill="#8d918a" opacity="0.7" />
+      <path d="M0 452 C190 436 380 452 560 464 C720 474 860 466 960 470" fill="none" stroke="#eef0e7" strokeWidth="5" strokeDasharray="18 18" opacity="0.7" />
+      {Array.from({ length: 16 }, (_, i) => (
+        <g key={i} transform={`translate(${44 + i * 36} ${424 + (i % 3) * 7})`}>
+          <path d="M0 14 C-5 4 -2 -3 4 -10 C7 0 9 6 0 14" fill="#4c7a4e" />
+          <circle cx="-4" cy="6" r="3" fill={i % 3 === 0 ? '#d89b5f' : '#e7c46b'} />
+          <circle cx="5" cy="3" r="2.5" fill={i % 2 === 0 ? '#c97266' : '#eee0a3'} />
+        </g>
+      ))}
+
+      <ShieldedLight x={330} y={408} />
+      <ShieldedLight x={620} y={414} />
+      <NativeTree x={44} y={414} scale={0.55} canopy="#4d8a5b" />
+      <PalmTree x={548} y={420} scale={0.58} lean={4} />
+
+      {/* Callouts */}
+      <g className="vision-callout">
+        <path d="M214 250 L180 208" />
+        <rect x="60" y="182" width="264" height="24" rx="5" />
+        <text x="72" y="199">Generic commercial architecture — hypothetical</text>
+      </g>
+      <g className="vision-callout">
+        <path d="M740 300 L700 262" />
+        <rect x="560" y="237" width="280" height="24" rx="5" />
+        <text x="572" y="254">Protected remedy area — nothing built</text>
+      </g>
+      <g className="vision-callout">
+        <path d="M300 428 L340 400" />
+        <rect x="300" y="452" width="222" height="24" rx="5" />
+        <text x="312" y="469">Conceptual shallow-rooted landscaping</text>
+      </g>
+
+      <g className="vision-scene-note landscape-note">
+        <rect x="540" y="498" rx="6" width="400" height="28" />
+        <text x="553" y="517">No parcel identified as buildable or approved</text>
+      </g>
+      <ConceptBadge />
+    </svg>
+  );
+}
+
 function VisionScene({ perspective }: { perspective: FacilityVisionPerspective }) {
   switch (perspective.sceneId) {
     case 'st-johns-neighborhood':
@@ -1056,6 +1290,10 @@ function VisionScene({ perspective }: { perspective: FacilityVisionPerspective }
       return <DesotoLandscapeScene />;
     case 'desoto-facility':
       return <DesotoFacilityScene />;
+    case 'escambia-remedy-first':
+      return <EscambiaRemedyFirstScene />;
+    case 'escambia-conditional-reuse':
+      return <EscambiaConditionalReuseScene />;
   }
 }
 

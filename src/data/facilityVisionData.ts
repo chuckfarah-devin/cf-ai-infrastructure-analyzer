@@ -8,7 +8,9 @@ export type FacilityVisionSceneId =
   | 'indiantown-landscape-stewardship'
   | 'desoto-neighborhood'
   | 'desoto-landscape'
-  | 'desoto-facility';
+  | 'desoto-facility'
+  | 'escambia-remedy-first'
+  | 'escambia-conditional-reuse';
 
 export type FacilityVisionIconId = 'community' | 'landscape' | 'infrastructure' | 'energy' | 'stewardship' | 'evidence';
 export type FacilityVisionGalleryLayout = 'two' | 'three';
@@ -400,6 +402,128 @@ export const FACILITY_VISION_PROFILES: FacilityVisionProfile[] = [
           'What air-quality permits would on-site generation require at the approved scale?',
           'Does the on-site-only generation approach conflict with the county’s FPL franchise agreement or state law?',
           'What architectural and landscape standards would be enforceable through approval conditions?',
+        ],
+      },
+    ],
+  },
+  {
+    siteId: 'escambia',
+    title: 'Remedy & Reuse',
+    subtitle:
+      'Educational illustrations of remedy protection and conditional commercial reuse at a Superfund site — not a development proposal, site plan, or statement that any parcel is buildable or approved.',
+    galleryLayout: 'two',
+    introNotes: [
+      {
+        icon: 'evidence',
+        title: 'The remedy comes first',
+        text: 'The capped containment cell, monitoring wells, access controls, and active groundwater treatment must be maintained indefinitely; the Ready for Reuse determination remains valid only while every recorded restriction is met.',
+      },
+      {
+        icon: 'landscape',
+        title: 'Reuse is conditional',
+        text: 'Commercial and industrial use is possible only within recorded restrictions — no housing, recreation, or agriculture; strict construction limits apply within the containment-cell footprint and require FDEP plan review.',
+      },
+      {
+        icon: 'community',
+        title: 'A displaced community',
+        text: 'More than 400 households in Rosewood Terrace, Oak Park, Escambia Arms, Goulding, and Clarinda Triangle were permanently relocated. Reuse conversations owe those residents acknowledgment and a voice.',
+      },
+    ],
+    evidenceNotes: [
+      {
+        type: 'documented',
+        text: 'EPA’s December 3, 2018 Ready for Reuse Determination found the site ready for commercial and industrial use, subject to recorded restrictive covenants. It is an environmental status report — not a permit, a development approval, or a guarantee that any specific use is safe or feasible.',
+        source: {
+          label: 'EPA RfR Determination, Escambia Wood - Pensacola',
+          date: 'Dec 2018',
+          url: 'https://semspub.epa.gov/work/04/11120113.pdf',
+        },
+      },
+      {
+        type: 'documented',
+        text: 'OU-1 soil remedy is short-term protective (2022 Five-Year Review); long-term protectiveness requires monitoring updates and covenants on the former facility parcels. OU-2 groundwater remediation began late 2023 and remains active with no established completion schedule.',
+        source: {
+          label: 'EPA Fifth Five-Year Review; EPA site profile',
+          date: '2022–2024',
+          url: 'https://cumulis.epa.gov/supercpad/SiteProfiles/index.cfm?fuseaction=second.cleanup&id=0400573',
+        },
+      },
+      {
+        type: 'documented',
+        text: 'April 2013 recorded covenants restrict the property to commercial, industrial, or manufacturing use and prohibit housing, day care, schools, recreation, mining, and agriculture. Stricter limits — no deep foundations, no deep-rooted vegetation, no infiltration ponds, FDEP construction review — apply within the containment-cell footprint specifically.',
+        source: {
+          label: 'EPA RfR Determination, Appendix B restrictive covenants',
+          date: '2013–2018',
+          url: 'https://semspub.epa.gov/work/04/11120113.pdf',
+        },
+      },
+      {
+        type: 'developer-statement',
+        text: 'January 2026 county committee discussions reported by local media described possible fire-training, transit, animal-shelter, marketable-parcel, and housing concepts pending new soil testing. These are reported directions, not adopted plans; any residential use would require formally amending EPA/FDEP institutional controls.',
+        source: {
+          label: 'Pensacola News Journal and WEAR coverage of county Committee of the Whole',
+          date: 'Jan 2026',
+          url: 'https://weartv.com/news/local/escambia-county-calls-for-new-environmental-soil-testing-of-midtown-commerce-park',
+        },
+      },
+      {
+        type: 'unresolved',
+        text: 'Not confirmed in the public records reviewed: recorded covenants on the former facility parcels (2022 FYR milestone), closure of EPA OIG recommendations 1 and 3 on institutional-control enforcement and physical access, and the outcome of the county’s new soil testing.',
+      },
+    ],
+    perspectives: [
+      {
+        id: 'remedy-first',
+        sceneId: 'escambia-remedy-first',
+        icon: 'stewardship',
+        title: 'Remedy-First Perspective',
+        subtitle: 'Symbolic containment, monitoring, and stewardship obligations',
+        designIntent:
+          'Explain that the cleanup is a permanent stewardship obligation — soil containment, monitoring, restricted groundwater use, and controlled access come before any reuse.',
+        ideas: [
+          'A capped containment area must remain intact, monitored, and protected for the long term.',
+          'Groundwater monitoring wells and active OU-2 treatment systems need continued access and protection.',
+          'Fencing, signage, and access controls are part of what keeps the remedy protective.',
+          'Groundwater use and new wells are prohibited within the restricted parcels; the site sits in a groundwater delineation area.',
+          'Native grasses and shallow-rooted planting can improve the landscape without threatening the cap.',
+        ],
+        limitations: [
+          'The containment form shown is symbolic; actual cell geometry and parcel boundaries appear only in verified records and the GIS view.',
+          'Nothing shown implies remediation is complete — OU-2 groundwater treatment is active.',
+          'Controlled access is depicted as a principle, not an approved security design.',
+        ],
+        questions: [
+          'What O&M obligations run with the land forever, and who verifies them?',
+          'How would OU-2 treatment systems and monitoring wells be protected during any adjacent activity?',
+          'Have the physical-access-control and enforcement gaps identified by the EPA OIG been corrected?',
+          'Are covenants now recorded on the former facility parcels as the 2022 FYR required?',
+        ],
+      },
+      {
+        id: 'conditional-reuse',
+        sceneId: 'escambia-conditional-reuse',
+        icon: 'infrastructure',
+        title: 'Conditional Redevelopment Perspective',
+        subtitle: 'A generic commercial setting shown alongside a protected remedy area',
+        designIntent:
+          'Illustrate how commercial architecture and landscaping might be approached only where compatible with verified land-use and remediation requirements — the remedy area stays protected and separate.',
+        ideas: [
+          'Low-rise commercial or industrial buildings with warm materials and landscape edges could replace blight with a composed streetscape.',
+          'The protected remedy area is depicted separately — fenced, signed, and unbuilt.',
+          'Shallow-rooted landscaping and paved surfaces illustrate constraint-aware design.',
+          'Utilities and access are shown generically; real layouts would require FDEP plan review within restricted areas.',
+        ],
+        limitations: [
+          'No area is identified as actually unconstrained, buildable, or approved — this is not a development proposal.',
+          'No buildings are shown over the containment area; no housing, recreation, groundwater extraction, or data center is depicted.',
+          'The December 2018 Ready for Reuse determination is a status report conditioned on restrictions — not a permit or approval for this or any facility.',
+          'January 2026 county concepts are reported discussions only; institutional controls remain in force unless formally amended.',
+        ],
+        questions: [
+          'Which parcels, if any, have recorded restrictions compatible with a proposed use, and what would FDEP review require?',
+          'What would the county’s new soil testing and any institutional-control amendments mean for allowable uses?',
+          'How would displaced residents and current neighbors shape reuse priorities and community benefits?',
+          'What utility capacity exists absent a legacy power interconnection?',
         ],
       },
     ],
