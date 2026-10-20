@@ -452,9 +452,11 @@ export function SiteExplorer() {
     <div className="site-explorer">
       <div className="site-explorer-header">
         <div>
-          <h2>AI Data Center Site Explorer</h2>
+          <h2>Florida Infrastructure &amp; Reuse Site Explorer</h2>
           <p className="site-explorer-subtitle">
-            Florida redevelopment opportunities — prioritizing previously developed sites over undisturbed land
+            Four Florida sites illustrate different questions involving AI infrastructure, energy-site reuse,
+            environmental stewardship, and conditional redevelopment — prioritizing previously developed sites
+            over undisturbed land. Not all four are proposed data centers.
           </p>
         </div>
       </div>
@@ -569,9 +571,7 @@ export function SiteExplorer() {
                   </span>
                 </span>
                 <span className={`table-classification ${site.classification}`}>
-                  {site.classification === 'redevelopment_opportunity' ? 'Opportunity'
-                    : site.classification === 'active_proposal' ? 'Active'
-                    : 'Case Study'}
+                  {site.classificationLabel}
                 </span>
               </button>
             ))}

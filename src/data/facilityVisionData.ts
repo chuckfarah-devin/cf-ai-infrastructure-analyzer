@@ -74,6 +74,33 @@ export const FACILITY_VISION_PROFILES: FacilityVisionProfile[] = [
         text: 'Cooling equipment, electrical systems, service access, and security are acknowledged rather than hidden behind decorative landscaping.',
       },
     ],
+    evidenceNotes: [
+      {
+        type: 'documented',
+        text: 'The 1,252 MW coal plant ceased operations in 2018 and was demolished. JEA’s board approved a $1.57B, 675 MW natural-gas combined-cycle plant on ~40 acres of the site in August 2025, and a zoning exception received planning-commission approval in November 2025.',
+        source: {
+          label: 'JEA board records; Jacksonville Times-Union; EIA Form 860',
+          date: '2018–2025',
+          url: 'https://www.eia.gov/electricity/data/eia860/',
+        },
+      },
+      {
+        type: 'developer-statement',
+        text: 'JEA, as owner, is marketing the remaining ~960 acres as “Gateway Commerce Center” for industrial and logistics redevelopment. That is the owner’s reuse direction — not a development approval for any specific tenant or facility type, including data centers.',
+        source: {
+          label: 'JEA board materials and site marketing',
+          date: '2023–2025',
+        },
+      },
+      {
+        type: 'unresolved',
+        text: 'Not established by public records: remaining grid-interconnection capacity after the new gas plant, whether any acreage is being marketed specifically for data-center use, and the environmental condition of the former coal footprint including coal combustion residuals.',
+      },
+      {
+        type: 'potential-protection',
+        text: 'The native screening, shielded lighting, stormwater concepts, and landscape edges in these scenes are design ideas only. No landscape plan, photometric plan, or acoustic analysis has been adopted for this site, and none is implied by the illustrations.',
+      },
+    ],
     perspectives: [
       {
         id: 'neighborhood',
@@ -133,7 +160,7 @@ export const FACILITY_VISION_PROFILES: FacilityVisionProfile[] = [
         id: 'facility',
         sceneId: 'st-johns-facility',
         icon: 'infrastructure',
-        title: 'Facility Design Perspective',
+        title: 'Complete Facility Perspective',
         subtitle: 'Practical infrastructure with architectural articulation and honest utility elements',
         designIntent:
           'Show that data-center buildings, cooling equipment, electrical infrastructure, access, and security can be acknowledged directly while still receiving thoughtful design treatment.',
