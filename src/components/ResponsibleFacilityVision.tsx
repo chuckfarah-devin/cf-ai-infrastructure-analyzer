@@ -699,6 +699,345 @@ function IndiantownLandscapeStewardshipScene() {
   );
 }
 
+function GeneratorSet({ x, y, scale = 1 }: { x: number; y: number; scale?: number }) {
+  return (
+    <g transform={`translate(${x} ${y}) scale(${scale})`}>
+      <rect x="0" y="14" width="96" height="52" rx="5" fill="#6d7b82" />
+      <rect x="8" y="22" width="80" height="30" rx="3" fill="#596a72" />
+      <path d="M14 28 H82 M14 36 H82 M14 44 H82" stroke="#8fa2aa" strokeWidth="3" opacity="0.8" />
+      <rect x="14" y="-18" width="10" height="32" fill="#4d5e66" />
+      <rect x="70" y="-26" width="10" height="40" fill="#4d5e66" />
+      <ellipse cx="19" cy="-20" rx="7" ry="3" fill="#8ea0a8" />
+      <ellipse cx="75" cy="-28" rx="7" ry="3" fill="#8ea0a8" />
+    </g>
+  );
+}
+
+function FenceRail({ x1, x2, y }: { x1: number; x2: number; y: number }) {
+  const posts = Math.floor((x2 - x1) / 46);
+  return (
+    <g>
+      <path d={`M${x1} ${y} H${x2} M${x1} ${y + 12} H${x2}`} stroke="#8a6f52" strokeWidth="5" strokeLinecap="round" />
+      {Array.from({ length: posts + 1 }, (_, i) => (
+        <rect key={i} x={x1 + i * 46 - 2.5} y={y - 8} width="5" height="30" rx="2" fill="#75593f" />
+      ))}
+    </g>
+  );
+}
+
+function DesotoNeighborhoodScene() {
+  return (
+    <svg className="vision-scene" viewBox="0 0 960 540" role="img" aria-labelledby="dn-vision-title dn-vision-desc">
+      <title id="dn-vision-title">Illustrative rural-facing facility concept</title>
+      <desc id="dn-vision-desc">
+        Symbolic street-level view of one hypothetical facility design with warm-toned articulated facades, native screening, a post-and-rail frontage, and shielded lighting. No real property boundary, setback, or residence is depicted.
+      </desc>
+      <defs>
+        <linearGradient id="dn-sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#8fc5ea" />
+          <stop offset="0.6" stopColor="#d9edf8" />
+          <stop offset="1" stopColor="#f3ead9" />
+        </linearGradient>
+        <linearGradient id="dn-glass" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#1e3a4d" />
+          <stop offset="1" stopColor="#5b8799" />
+        </linearGradient>
+        <pattern id="dn-masonry" width="24" height="16" patternUnits="userSpaceOnUse">
+          <rect width="24" height="16" fill="#b98d63" />
+          <path d="M0 0 H24 M0 8 H24 M8 0 V8 M18 8 V16" stroke="#966f4f" strokeWidth="0.7" opacity="0.48" />
+        </pattern>
+        <pattern id="dn-perforated" width="12" height="12" patternUnits="userSpaceOnUse">
+          <rect width="12" height="12" fill="#cfd5d9" />
+          <circle cx="6" cy="6" r="1.7" fill="#8b949d" opacity="0.55" />
+        </pattern>
+      </defs>
+
+      <rect width="960" height="540" fill="url(#dn-sky)" />
+      <circle cx="820" cy="76" r="34" fill="#fff6d7" opacity="0.6" />
+
+      {/* Distant pasture and tree line */}
+      <path d="M0 330 C140 308 255 316 380 332 C522 350 663 325 806 342 C890 352 934 344 960 336 L960 540 L0 540 Z" fill="#a9b98a" />
+      <path d="M0 322 C60 292 118 302 162 318 C210 284 282 292 330 320 C392 282 474 290 526 324 C592 286 678 292 730 326 C788 290 872 294 960 328 L960 352 L0 352 Z" fill="#5f8659" opacity="0.75" />
+      <path d="M0 424 C190 405 377 418 515 432 C696 450 826 424 960 435 L960 540 L0 540 Z" fill="#bfc7bd" />
+      <path d="M0 462 C220 446 440 462 654 474 C790 482 880 470 960 475 L960 540 L0 540 Z" fill="#989b91" />
+
+      {/* Left articulated masonry volume */}
+      <polygon points="70,246 320,205 320,414 70,443" fill="#a97851" />
+      <polygon points="82,255 308,219 308,407 82,431" fill="url(#dn-masonry)" />
+      <polygon points="70,246 320,205 336,218 89,260" fill="#75533e" />
+      <path d="M99 283 L289 250 M99 321 L289 291 M99 360 L289 334" stroke="#7e5b43" strokeWidth="2" opacity="0.35" />
+      <rect x="139" y="337" width="52" height="76" rx="3" fill="#263f4a" />
+      <path d="M129 331 H203 L195 344 H137 Z" fill="#7a5d47" />
+
+      {/* Main composed facade */}
+      <rect x="300" y="126" width="428" height="302" rx="3" fill="#d9d4ca" />
+      <rect x="300" y="312" width="428" height="116" fill="url(#dn-masonry)" />
+      <rect x="316" y="143" width="396" height="150" rx="3" fill="#304b58" />
+      <FinArray x={323} y={136} count={22} width={9} gap={8.8} height={166} color="#d4c4aa" accent="#a67c52" />
+      {Array.from({ length: 16 }, (_, i) => (
+        <rect key={i} x={353 + i * 18} y={153 + (i % 3) * 8} width="9" height={86 + (i % 4) * 12} fill="url(#dn-glass)" opacity="0.52" />
+      ))}
+      <path d="M282 125 H744 L724 145 H302 Z" fill="#7d6754" />
+      <path d="M310 298 H722 L702 315 H330 Z" fill="#846b55" />
+
+      {/* Entrance and human-scale canopy */}
+      <rect x="468" y="340" width="94" height="88" rx="4" fill="#243b45" />
+      <rect x="486" y="354" width="58" height="74" fill="#314f5b" opacity="0.8" />
+      <path d="M438 331 H591 L571 350 H456 Z" fill="#735844" />
+      <path d="M473 382 H556" stroke="#d8c8aa" strokeWidth="2" opacity="0.7" />
+
+      {/* Right screened mechanical volume */}
+      <polygon points="724,177 866,219 866,423 724,428" fill="#a9967f" />
+      <polygon points="739,192 850,227 850,405 739,413" fill="url(#dn-perforated)" />
+      <path d="M745 204 L845 237 M745 237 L845 270 M745 270 L845 303 M745 303 L845 336" stroke="#87919a" strokeWidth="2" opacity="0.55" />
+      <rect x="756" y="326" width="70" height="50" rx="5" fill="#68747c" opacity="0.5" />
+      <circle cx="778" cy="350" r="14" fill="#4f5c65" opacity="0.65" />
+      <circle cx="806" cy="350" r="14" fill="#4f5c65" opacity="0.65" />
+
+      {/* Planting beds and post-and-rail rural frontage */}
+      <path d="M52 431 C172 415 285 423 393 439 C540 462 715 433 900 452 L900 484 C710 465 542 488 390 466 C265 448 161 444 52 459 Z" fill="#5e7d54" />
+      <path d="M0 490 C215 472 415 493 612 505 C755 515 858 501 960 508 L960 540 L0 540 Z" fill="#d0c4ae" />
+      <FenceRail x1={18} x2={918} y={492} />
+      <NativeTree x={116} y={438} scale={0.78} />
+      <NativeTree x={244} y={435} scale={0.58} canopy="#4d8a5b" />
+      <NativeTree x={635} y={438} scale={0.7} canopy="#3f7654" />
+      <PalmTree x={885} y={452} scale={0.74} lean={5} />
+      <ShieldedLight x={414} y={466} />
+      <ShieldedLight x={688} y={463} />
+
+      <g className="vision-scene-note">
+        <rect x="578" y="499" rx="6" width="358" height="28" />
+        <text x="591" y="518">Symbolic rural edge — no setback shown</text>
+      </g>
+      <ConceptBadge />
+    </svg>
+  );
+}
+
+function DesotoLandscapeScene() {
+  return (
+    <svg className="vision-scene" viewBox="0 0 960 540" role="img" aria-labelledby="dl-vision-title dl-vision-desc">
+      <title id="dl-vision-title">Illustrative rural landscape concept</title>
+      <desc id="dl-vision-desc">
+        Symbolic oblique view of the same hypothetical buildings in a pasture landscape with conceptual stormwater planting and a dashed habitat question mark. No mapped wetlands, parcels, or real site geometry is depicted.
+      </desc>
+      <defs>
+        <linearGradient id="dl-sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#79b7de" />
+          <stop offset="0.62" stopColor="#cfe9f5" />
+          <stop offset="1" stopColor="#f4ead3" />
+        </linearGradient>
+        <linearGradient id="dl-water" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#5e95a3" />
+          <stop offset="1" stopColor="#2e6875" />
+        </linearGradient>
+        <pattern id="dl-panel" width="30" height="18" patternUnits="userSpaceOnUse">
+          <rect width="30" height="18" fill="#b7a58b" />
+          <path d="M0 0 V18 M15 0 V18" stroke="#d9cfbd" strokeWidth="1" opacity="0.65" />
+        </pattern>
+      </defs>
+
+      <rect width="960" height="540" fill="url(#dl-sky)" />
+
+      {/* Open pasture and distant hammock canopy */}
+      <path d="M0 290 C138 268 239 278 360 292 C497 308 645 277 801 300 C885 313 926 303 960 294 L960 540 L0 540 Z" fill="#9cb27e" />
+      <path d="M0 286 C50 247 107 262 152 280 C199 242 269 251 317 282 C379 241 463 250 514 287 C581 245 670 253 723 288 C780 249 864 253 960 292 L960 333 L0 333 Z" fill="#557f59" opacity="0.8" />
+
+      {/* Same articulated low campus forms */}
+      <g transform="translate(220 182)">
+        <polygon points="0,80 66,56 218,56 254,80" fill="#8b7660" />
+        <rect x="15" y="80" width="205" height="104" rx="4" fill="#d8d1c1" />
+        <rect x="15" y="133" width="205" height="51" fill="url(#dl-panel)" />
+        <rect x="30" y="91" width="175" height="31" fill="#415f66" opacity="0.85" />
+        <FinArray x={35} y={88} count={11} width={8} gap={7} height={42} color="#d7c6a8" accent="#9b744d" />
+        <path d="M8 126 H228 L216 138 H20 Z" fill="#79614e" />
+        <rect x="57" y="142" width="42" height="42" fill="#2e4b54" opacity="0.8" />
+      </g>
+      <g transform="translate(484 148)">
+        <polygon points="0,95 36,72 244,72 286,95" fill="#756654" />
+        <rect x="18" y="95" width="244" height="141" rx="4" fill="#c9c4b9" />
+        <rect x="18" y="163" width="244" height="73" fill="url(#dl-panel)" />
+        <rect x="34" y="110" width="212" height="39" fill="#3c5963" />
+        <FinArray x={42} y={105} count={15} width={7} gap={7} height={55} color="#dccfb8" accent="#a77c51" />
+        <polygon points="18,95 36,72 58,72 40,95" fill="#a68b6f" />
+        <polygon points="226,72 250,72 232,95 208,95" fill="#a68b6f" />
+        <path d="M28 151 H252 L238 165 H42 Z" fill="#75604d" />
+      </g>
+      <g transform="translate(675 202)">
+        <polygon points="0,56 42,36 174,36 208,56" fill="#82715c" />
+        <rect x="14" y="56" width="178" height="93" rx="4" fill="#d9d4c8" />
+        <rect x="14" y="104" width="178" height="45" fill="url(#dl-panel)" />
+        <rect x="29" y="66" width="148" height="27" fill="#46636b" />
+        <FinArray x={36} y={64} count={9} width={7} gap={8} height={36} color="#ded0b9" accent="#99734e" />
+      </g>
+
+      {/* Pasture bands, conceptual swale, and symbolic habitat question */}
+      <path d="M0 340 C136 319 250 335 365 354 C485 374 650 343 790 365 C869 377 920 371 960 360 L960 540 L0 540 Z" fill="#6f925f" />
+      <path d="M0 386 C159 367 294 384 420 402 C585 425 735 393 960 410 L960 540 L0 540 Z" fill="#93a86f" />
+      <path d="M0 444 C160 414 320 434 465 456 C642 482 792 449 960 468 L960 540 L0 540 Z" fill="url(#dl-water)" opacity="0.9" />
+      <path d="M0 444 C171 420 327 438 468 458 C650 484 801 453 960 470" fill="none" stroke="#c8e5d4" strokeWidth="5" opacity="0.45" />
+
+      <path d="M162 356 C266 324 345 352 434 338 C517 325 607 316 714 344 C782 361 841 356 900 335" fill="none" stroke="#e5f5cf" strokeWidth="11" strokeDasharray="18 14" opacity="0.72" strokeLinecap="round" />
+      <path d="M162 356 C266 324 345 352 434 338 C517 325 607 316 714 344 C782 361 841 356 900 335" fill="none" stroke="#3f7d55" strokeWidth="2.5" strokeDasharray="9 14" opacity="0.9" />
+      <g className="vision-scene-note landscape-note">
+        <rect x="122" y="316" rx="6" width="276" height="27" />
+        <text x="135" y="334">Potential habitat connection — location TBD</text>
+      </g>
+
+      {/* Stormwater planting and native pasture edge */}
+      <ReedCluster x={66} y={516} scale={0.9} />
+      <ReedCluster x={170} y={529} scale={0.72} />
+      <ReedCluster x={425} y={524} scale={0.82} />
+      <ReedCluster x={700} y={525} scale={0.75} />
+      <ReedCluster x={815} y={520} scale={0.88} />
+      <NativeTree x={102} y={363} scale={0.64} />
+      <NativeTree x={382} y={365} scale={0.5} canopy="#5a8c5f" />
+      <NativeTree x={845} y={369} scale={0.67} />
+      <PalmTree x={910} y={430} scale={0.82} lean={-7} />
+      <PalmTree x={42} y={430} scale={0.64} lean={6} />
+      <ShieldedLight x={300} y={414} />
+      <ShieldedLight x={764} y={414} />
+
+      <g className="vision-scene-note">
+        <rect x="548" y="493" rx="6" width="388" height="28" />
+        <text x="561" y="512">Environmental features symbolic — no mapped boundaries</text>
+      </g>
+      <ConceptBadge />
+    </svg>
+  );
+}
+
+function DesotoFacilityScene() {
+  return (
+    <svg className="vision-scene" viewBox="0 0 960 540" role="img" aria-labelledby="df-vision-title df-vision-desc">
+      <title id="df-vision-title">Illustrative complete facility concept with utility infrastructure</title>
+      <desc id="df-vision-desc">
+        Symbolic view of the same hypothetical design honestly showing generic on-site generation, cooling equipment, transformers, security, and service access. No real site layout or engineering design is depicted.
+      </desc>
+      <defs>
+        <linearGradient id="df-sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#83b9dd" />
+          <stop offset="0.63" stopColor="#d8ebf4" />
+          <stop offset="1" stopColor="#efe5d4" />
+        </linearGradient>
+        <pattern id="df-masonry" width="26" height="18" patternUnits="userSpaceOnUse">
+          <rect width="26" height="18" fill="#ad815e" />
+          <path d="M0 0 H26 M0 9 H26 M9 0 V9 M19 9 V18" stroke="#865f45" strokeWidth="0.75" opacity="0.5" />
+        </pattern>
+        <pattern id="df-screen" width="10" height="10" patternUnits="userSpaceOnUse">
+          <rect width="10" height="10" fill="#b6bec3" />
+          <rect x="2" y="2" width="2.3" height="2.3" fill="#6f7a82" opacity="0.55" />
+        </pattern>
+      </defs>
+
+      <rect width="960" height="540" fill="url(#df-sky)" />
+      <path d="M0 324 C151 296 310 312 468 333 C651 357 790 323 960 348 L960 540 L0 540 Z" fill="#9aac91" />
+      <path d="M0 409 C186 385 340 405 513 425 C711 449 833 421 960 434 L960 540 L0 540 Z" fill="#c0beb1" />
+      <path d="M58 470 C216 445 385 459 540 477 C718 497 835 477 960 486 L960 540 L58 540 Z" fill="#6f7778" opacity="0.75" />
+      <path d="M80 464 C254 444 424 458 586 478 C727 495 858 478 960 487" fill="none" stroke="#eef0e7" strokeWidth="5" strokeDasharray="18 18" opacity="0.7" />
+
+      {/* Rear data hall */}
+      <g transform="translate(96 174)">
+        <polygon points="0,91 74,61 286,61 342,91" fill="#806b57" />
+        <rect x="18" y="91" width="294" height="153" rx="4" fill="#cec8bb" />
+        <rect x="18" y="181" width="294" height="63" fill="url(#df-masonry)" />
+        <rect x="38" y="108" width="254" height="52" fill="#354f59" />
+        <FinArray x={48} y={102} count={17} width={8} gap={7} height={66} color="#d4c7b0" accent="#9a734e" />
+        <path d="M16 160 H314 L299 177 H31 Z" fill="#7a624f" />
+      </g>
+
+      {/* Main data hall */}
+      <g transform="translate(286 116)">
+        <polygon points="0,126 54,94 340,94 402,126" fill="#75604c" />
+        <rect x="24" y="126" width="348" height="208" rx="5" fill="#d9d4c7" />
+        <rect x="24" y="243" width="348" height="91" fill="url(#df-masonry)" />
+        <rect x="44" y="146" width="306" height="72" fill="#344f5c" />
+        <FinArray x={54} y={138} count={21} width={9} gap={6.5} height={91} color="#ded1b8" accent="#a77a50" />
+        <path d="M19 219 H378 L360 239 H37 Z" fill="#7c6753" />
+        <rect x="128" y="274" width="86" height="60" rx="3" fill="#293f48" />
+        <path d="M103 263 H239 L220 280 H121 Z" fill="#6f5846" />
+      </g>
+
+      {/* On-site generation yard, symbolic */}
+      <g transform="translate(626 218)">
+        <rect x="-14" y="-30" width="248" height="100" rx="8" fill="#9ba6aa" opacity="0.5" />
+        <GeneratorSet x={0} y={18} scale={0.78} />
+        <GeneratorSet x={128} y={24} scale={0.72} />
+        <path d="M-4 74 H240" stroke="#4f5f66" strokeWidth="6" />
+        {Array.from({ length: 18 }, (_, i) => (
+          <path key={i} d={`M${i * 14} -26 V74`} stroke="#6d787e" strokeWidth="3" opacity="0.65" />
+        ))}
+        <rect x="-8" y="-26" width="240" height="98" fill="url(#df-screen)" opacity="0.34" />
+      </g>
+
+      {/* Cooling yard honestly visible behind screen */}
+      <g transform="translate(630 322)">
+        <rect x="-12" y="-8" width="236" height="104" rx="8" fill="#9ba6aa" opacity="0.5" />
+        <CoolingUnit x={0} y={10} />
+        <CoolingUnit x={116} y={16} />
+        <path d="M-2 3 H230 M-2 92 H230" stroke="#4f5f66" strokeWidth="6" />
+        {Array.from({ length: 18 }, (_, i) => (
+          <path key={i} d={`M${i * 14} -5 V98`} stroke="#6d787e" strokeWidth="3" opacity="0.65" />
+        ))}
+        <rect x="0" y="0" width="230" height="98" fill="url(#df-screen)" opacity="0.36" />
+      </g>
+
+      {/* Electrical infrastructure */}
+      <g transform="translate(68 325)">
+        <rect x="-18" y="-9" width="214" height="96" rx="7" fill="#87948f" opacity="0.45" />
+        <Transformer x={0} y={12} />
+        <Transformer x={84} y={18} />
+        <path d="M18 4 C52 -36 98 -30 132 4 C159 -20 183 -15 197 8" fill="none" stroke="#3f4f59" strokeWidth="5" />
+        <path d="M-18 88 H198" stroke="#58676d" strokeWidth="7" />
+        {Array.from({ length: 14 }, (_, i) => (
+          <path key={i} d={`M${-10 + i * 16} -8 V88`} stroke="#5f6f75" strokeWidth="2" opacity="0.6" />
+        ))}
+      </g>
+
+      {/* Controlled access and service route */}
+      <g transform="translate(565 404)">
+        <rect x="0" y="0" width="82" height="45" rx="4" fill="#b6916d" />
+        <rect x="9" y="11" width="30" height="20" fill="#334d58" />
+        <path d="M-8 -8 H90 L80 3 H1 Z" fill="#725944" />
+        <rect x="86" y="12" width="12" height="66" fill="#46565e" />
+        <rect x="94" y="16" width="138" height="10" rx="5" fill="#a7483f" />
+        <path d="M102 26 L102 78 M129 26 L129 78 M156 26 L156 78 M183 26 L183 78 M210 26 L210 78" stroke="#586a70" strokeWidth="4" />
+      </g>
+
+      {/* Native landscape and lights */}
+      <NativeTree x={67} y={444} scale={0.65} />
+      <NativeTree x={500} y={445} scale={0.6} canopy="#527f58" />
+      <PalmTree x={896} y={449} scale={0.72} lean={-5} />
+      <ShieldedLight x={456} y={454} />
+      <ShieldedLight x={827} y={449} />
+
+      {/* Educational callouts */}
+      <g className="vision-callout">
+        <path d="M337 116 L259 70" />
+        <rect x="130" y="48" width="129" height="24" rx="5" />
+        <text x="142" y="65">Articulated data hall</text>
+      </g>
+      <g className="vision-callout">
+        <path d="M742 196 L742 162" />
+        <rect x="630" y="137" width="222" height="24" rx="5" />
+        <text x="642" y="154">On-site generation — project use only</text>
+      </g>
+      <g className="vision-callout">
+        <path d="M705 322 L700 302" />
+        <rect x="562" y="277" width="174" height="24" rx="5" />
+        <text x="574" y="294">Screened cooling equipment</text>
+      </g>
+      <g className="vision-callout">
+        <path d="M163 327 L165 291" />
+        <rect x="75" y="266" width="180" height="24" rx="5" />
+        <text x="87" y="283">Electrical infrastructure</text>
+      </g>
+
+      <ConceptBadge />
+    </svg>
+  );
+}
+
 function VisionScene({ perspective }: { perspective: FacilityVisionPerspective }) {
   switch (perspective.sceneId) {
     case 'st-johns-neighborhood':
@@ -711,6 +1050,12 @@ function VisionScene({ perspective }: { perspective: FacilityVisionPerspective }
       return <IndiantownEnergyReuseScene />;
     case 'indiantown-landscape-stewardship':
       return <IndiantownLandscapeStewardshipScene />;
+    case 'desoto-neighborhood':
+      return <DesotoNeighborhoodScene />;
+    case 'desoto-landscape':
+      return <DesotoLandscapeScene />;
+    case 'desoto-facility':
+      return <DesotoFacilityScene />;
   }
 }
 

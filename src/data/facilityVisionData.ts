@@ -5,7 +5,10 @@ export type FacilityVisionSceneId =
   | 'st-johns-landscape'
   | 'st-johns-facility'
   | 'indiantown-energy-reuse'
-  | 'indiantown-landscape-stewardship';
+  | 'indiantown-landscape-stewardship'
+  | 'desoto-neighborhood'
+  | 'desoto-landscape'
+  | 'desoto-facility';
 
 export type FacilityVisionIconId = 'community' | 'landscape' | 'infrastructure' | 'energy' | 'stewardship' | 'evidence';
 export type FacilityVisionGalleryLayout = 'two' | 'three';
@@ -255,6 +258,148 @@ export const FACILITY_VISION_PROFILES: FacilityVisionProfile[] = [
           'Which drainage and stormwater approaches are compatible with the former industrial site and surrounding landscape?',
           'Could maintenance access, panel spacing, and landscape stewardship coexist at a specific location?',
           'What long-term monitoring or land-management commitments would be appropriate?',
+        ],
+      },
+    ],
+  },
+  {
+    siteId: 'desoto',
+    title: 'Responsible Facility Vision',
+    subtitle:
+      'Educational design possibilities for rural-compatible AI infrastructure — not DCIP’s proposed design, a site plan, or a statement that the pending expansion applications are approved.',
+    galleryLayout: 'three',
+    introNotes: [
+      {
+        icon: 'infrastructure',
+        title: 'One consistent design idea',
+        text: 'The same warm-toned, low-profile, articulated architecture appears in all three scenes so they read as different views of a single concept.',
+      },
+      {
+        icon: 'landscape',
+        title: 'Landscape as possibility, not proof',
+        text: 'Native screening, stormwater planting, and habitat ideas do not satisfy acoustic limits, establish water supply, or substitute for environmental permits.',
+      },
+      {
+        icon: 'evidence',
+        title: 'Approved vs. pending',
+        text: 'Only the 34.22-acre Phase 1 PUD is approved, with conditions. The two expansion applications totaling 828.05 acres are pending and are not depicted.',
+      },
+    ],
+    evidenceNotes: [
+      {
+        type: 'documented',
+        text: 'Per the March 24, 2026 BOCC minutes, Ordinance 2026-004 was adopted with conditions including a 55-dBA noise limit at 200 feet from all property lines, a photometric plan showing no light trespass, perimeter buffering, and reclaimed-water feasibility findings due at the improvement-plan stage. These are approval requirements — not demonstrated operational compliance.',
+        source: {
+          label: 'DeSoto County BOCC minutes, March 24, 2026',
+          date: '2026',
+          url: 'https://desotobocc.legistar1.com/desotobocc/meetings/2026/3/3776_M_Board_of_County_Commissioners_26-03-24_Meeting_Minutes.pdf',
+        },
+      },
+      {
+        type: 'documented',
+        text: 'The approved project is limited to 34.22 acres and a maximum 35,134 sq ft facility. Applications RZNE-0086-2026 (274.26 ac) and RZNE-0087-2026 (553.79 ac) are pending public hearings; the July 28, 2026 moratorium exempts them from the pause but does not approve them.',
+        source: {
+          label: 'DeSoto County Data Center Applications page; Ordinance 2026-016',
+          date: '2026',
+          url: 'https://desotobocc.com/431/Data-Center-Applications',
+        },
+      },
+      {
+        type: 'developer-statement',
+        text: 'DCIP describes rural-character design, tree buffers, neutral colors, low-profile structures, closed-loop cooling, and reclaimed or well water. These are applicant statements, not independently verified plans, permits, or performance.',
+        source: {
+          label: 'DCIP Group FAQ and public materials',
+          date: '2025–2026',
+          url: 'https://www.dcipgroup.tech/faq',
+        },
+      },
+      {
+        type: 'unresolved',
+        text: 'Final codified Ordinance 2026-004 text (including Planning Commission conditions 14–15), SWFWMD water-use permitting, state ERP/USACE wetland approvals, and demonstrated noise and lighting compliance all remain unverified.',
+      },
+    ],
+    perspectives: [
+      {
+        id: 'neighborhood',
+        sceneId: 'desoto-neighborhood',
+        icon: 'community',
+        title: 'Neighborhood Perspective',
+        subtitle: 'A rural-facing public edge with warmth, screening, and visual restraint',
+        designIntent:
+          'Explore how a data facility could present a composed, rural-compatible public face rather than a blank industrial edge.',
+        ideas: [
+          'Warm earth-tone masonry and textured panels could create lower, grounded facade sections suited to a rural setting.',
+          'Shaded overhangs, varied facade bays, and an understated entrance could reduce warehouse-like massing.',
+          'Layered native trees and a post-and-rail style frontage could echo the agricultural character of the surrounding landscape.',
+          'Shielded, downward-directed lighting could support a no-light-trespass design objective.',
+          'Mechanical areas could sit behind architectural screening rather than dominating the public view.',
+        ],
+        limitations: [
+          'No street location, setback, property boundary, residence, distance, or approved landscape plan is depicted.',
+          'Vegetation is symbolic and is not represented as satisfying the adopted 55-dBA-at-200-ft noise limit or any acoustic requirement.',
+          'Shielded lighting shown here is a design idea; the adopted condition requires a photometric plan demonstrating no light trespass.',
+          'Facade materials and equipment locations are design ideas only.',
+        ],
+        questions: [
+          'Can the improvement plan demonstrate the adopted 55-dBA limit and zero light trespass with the actual equipment selected?',
+          'Which verified public viewpoints, roads, and residences would require viewshed analysis?',
+          'What landscape buffer, maintenance, and replacement commitments would be enforceable?',
+          'What independent acoustic analysis would determine equipment siting and enclosure requirements?',
+        ],
+      },
+      {
+        id: 'landscape',
+        sceneId: 'desoto-landscape',
+        icon: 'landscape',
+        title: 'Landscape & Habitat Perspective',
+        subtitle: 'The same architecture within a symbolic rural Florida landscape',
+        designIntent:
+          'Place the same hypothetical buildings within a symbolic pasture landscape to explore stormwater and habitat questions without mapping real site features.',
+        ideas: [
+          'The same articulated, low-profile buildings could sit within a pasture-like setting rather than a cleared industrial pad.',
+          'Conceptual stormwater planting is shown as a design possibility subject to engineering and permitting review.',
+          'A dashed habitat-connection symbol represents one planning question — not a mapped corridor.',
+          'Documented wetlands, flood zones, and the Conservation Overlay District remain in the separate verified GIS view.',
+        ],
+        limitations: [
+          'No mapped wetland, parcel boundary, buildable area, habitat corridor, or development footprint is depicted.',
+          'About 14% of the approved Phase 1 site is documented wetlands and surface waters — a record fact, not a mapped feature here.',
+          'No wetland impact, mitigation location, stormwater design, or environmental approval is implied; ERP and USACE Section 404 needs are unresolved.',
+          'The pending expansion parcels are not shown and are not approved.',
+        ],
+        questions: [
+          'What state ERP and possible USACE Section 404 review would jurisdictional wetland impacts require?',
+          'What stormwater approach is technically feasible and permittable on the actual site?',
+          'Could habitat connections be maintained without affecting jurisdictional wetlands or surface waters?',
+          'How would the pending expansion parcels be evaluated separately if their hearings proceed?',
+        ],
+      },
+      {
+        id: 'facility',
+        sceneId: 'desoto-facility',
+        icon: 'infrastructure',
+        title: 'Complete Facility Perspective',
+        subtitle: 'The same design honestly showing generation, cooling, and electrical infrastructure',
+        designIntent:
+          'Show one consistent concept honestly — data halls, on-site generation, cooling equipment, electrical infrastructure, security, and service access acknowledged rather than hidden.',
+        ideas: [
+          'The same modular data halls could use textured panels, warm materials, fins, and shaded openings rather than blank walls.',
+          'On-site generation equipment is shown symbolically — the adopted ordinance restricts it to serving the project only, with no third-party sales.',
+          'Cooling equipment could be consolidated behind architectural screening while remaining visibly acknowledged.',
+          'Transformers and electrical infrastructure could sit within a controlled, landscaped service yard.',
+          'Controlled access, fencing, lighting, and emergency circulation can be coordinated rather than treated as afterthoughts.',
+        ],
+        limitations: [
+          'No building count, generation capacity, cooling technology, fuel storage, or site layout is proposed.',
+          'Equipment symbols are generic; they do not establish air permitting, water supply, interconnection, or franchise-compliance feasibility.',
+          'Whether on-site-only generation is permissible under the county’s FPL franchise agreement or state law remains unresolved — the county expressly disclaimed any representation on this point.',
+          'The pending expansion applications are not depicted and are not approved.',
+        ],
+        questions: [
+          'What cooling technology and water source would actually be permitted — and did the required reclaimed-water feasibility review find usable supply?',
+          'What air-quality permits would on-site generation require at the approved scale?',
+          'Does the on-site-only generation approach conflict with the county’s FPL franchise agreement or state law?',
+          'What architectural and landscape standards would be enforceable through approval conditions?',
         ],
       },
     ],
