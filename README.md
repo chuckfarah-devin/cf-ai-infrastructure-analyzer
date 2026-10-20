@@ -1,109 +1,96 @@
-# Florida AI Grid Demonstrator — MVP (Release 1)
+# PowerGrid AI — Florida AI Grid Demonstrator
 
-An interactive web application that illustrates how coordinated distributed energy resources (solar, EV batteries, home storage) might reshape Florida's grid demand in the context of AI data-center growth.
+An interactive, educational web application exploring how Florida's grid
+might respond to AI data-center growth — and how previously developed
+industrial sites could be responsibly evaluated for reuse.
 
-> **Important:** This is an **illustrative scenario-based demonstrator**, not a production grid-planning or power-flow model. All resource sizes, demand curves, and efficiency values are illustrative defaults. No results should be used for interconnection studies, resource adequacy filings, or investment decisions without independent engineering analysis.
+> **[Live Demo — Version 2 Preview](https://chuckfarah-devin.github.io/cf-ai-infrastructure-analyzer-preview/)**
+> The enhanced preview adds the four-site explorer, environmental GIS,
+> and Responsible Design Vision galleries. This is a development preview,
+> not the stable production release.
+>
+> **[Stable Release 1](https://chuckfarah-devin.github.io/cf-ai-infrastructure-analyzer/)**
+> The original production deployment.
 
----
+## Overview
 
-## Quick Start
+PowerGrid AI is an educational demonstrator — not an engineering or
+planning tool. It helps explain how electricity moves from generation
+through grid infrastructure to consumers, how coordinated distributed
+energy resources might reduce peak demand, and how former industrial
+sites are evaluated when communities consider redevelopment.
 
-### Prerequisites
-- [Node.js](https://nodejs.org/) v18 or later
+## Features
 
-### Install
+- **Energy Flow** — interactive hourly simulation with Scenario
+  Presets and Simulation Controls: Generation Sources (conventional
+  fleet plus utility and distributed solar), Storage Resources
+  (home batteries and EV vehicle-to-grid charge/discharge), and an
+  adjustable AI Data Center Load. Two Energy Strategy modes —
+  **Traditional** and **Coordinated** — are compared side by side,
+  with an illustrative financial dashboard (demand charges, avoided
+  capacity value, customer cost).
+- **Site Explorer** — four Florida case studies (St. Johns River Power
+  Park, DeSoto County Plant, Indiantown Cogeneration, Escambia Wood
+  Treating) illustrating different questions about AI infrastructure,
+  energy-site reuse, and conditional redevelopment. Not all four are
+  proposed data centers.
+- **Environmental GIS** — satellite basemaps plus public
+  environmental-context layers: mapped wetlands (USFWS National
+  Wetlands Inventory, FDEP-hosted service), effective flood hazards
+  (FEMA National Flood Hazard Layer), conservation lands (Florida
+  Natural Areas Inventory / FDEP), aquatic preserves (FDEP Division
+  of State Lands), and a NOAA Composite Shoreline reference
+  (FDEP-hosted extract). Data originates with those agencies; FDEP
+  and FEMA host the public services the app queries.
+- **Responsible Design Vision** — ten conceptual illustrations across
+  the four sites, each labeled *Illustrative Concept — Not a Site Plan*
+  with evidence notes distinguishing documented public records,
+  developer statements, unresolved questions, and proposed protections.
+- **Community Impact & Protection** — evidence-qualified assessments
+  currently available for St. Johns and DeSoto; Indiantown and
+  Escambia are planned.
+
+## Technology stack
+
+React · TypeScript · Vite · Vitest · Recharts · MapLibre GL ·
+public GIS services (FDEP, FEMA, USFWS, NOAA, FNAI data) ·
+ArcGIS basemap styles
+
+## Development approach
+
+AI-assisted, specification-driven, incremental development with
+automated testing (56-test suite) and staged human review checkpoints.
+Site data carries explicit confidence classifications separating
+verified public records from inference and unresolved questions.
+
+## Limitations
+
+- Simulations are **illustrative scenario models** — not engineering
+  forecasts, interconnection studies, or investment analyses.
+- Mapped environmental context is not a parcel-level site
+  determination.
+- Architectural illustrations are conceptual education aids, **not
+  site plans**, and imply no approval, availability, or suitability.
+- Nothing here endorses any specific development; site-readiness
+  claims require independent engineering, environmental, and legal
+  review.
+
+## Run locally
+
 ```bash
-cd cf-ai-infrastructure-analyzer
 npm install
+npm run dev        # http://localhost:5173
+npm test -- --run  # 56 tests
+npm run build      # production build → dist/
 ```
 
-### Run (development)
-```bash
-npm run dev
-```
-Open [http://localhost:5173](http://localhost:5173) in your browser.
+Satellite basemaps require a `VITE_ARCGIS_API_KEY` in `.env.local`
+(an ArcGIS developer key scoped to basemap styles); the app degrades
+gracefully without it. Environmental overlay layers use public
+services and need no key.
 
-### Run tests
-```bash
-npm test -- --run
-```
+## Documentation
 
-### Build for production
-```bash
-npm run build
-```
-Output is placed in `dist/`.
-
----
-
-## What it models
-
-The demonstrator simulates a 24-hour Florida grid day with configurable:
-
-| Parameter | Description |
-|---|---|
-| EV fleet size and V2G participation | Vehicle-to-grid discharge during peak hours |
-| Distributed (rooftop) solar | Behind-the-meter generation |
-| Utility-scale solar | Front-of-meter generation |
-| Home battery systems | Residential storage (e.g., Powerwall-class) |
-| AI data-center load | Incremental constant load added to system |
-| Operating mode | **Traditional** (no VPP coordination) vs **Coordinated** (peak-shaving VPP dispatch) |
-| Hurricane / island mode | Grid-disconnected critical-load operation |
-
-### Coordinated dispatch strategy (MVP)
-
-1. A 24-hour baseline net-grid-load curve is computed before any storage dispatch.
-2. The top 20% of hours (by baseline load) are classified as peak-dispatch hours.
-3. Battery energy is reserved for those peak hours; off-peak deficits are met by the grid.
-4. Solar surplus charges batteries throughout the day.
-5. Post-peak recovery charging is pre-planned and allocated to the lowest-load hours first, using the dispatch-only peak as a ceiling — preventing recovery from recreating the original system peak.
-6. Terminal SOC (50%) is restored when physically possible within the ceiling constraint. Any shortfall is reported.
-
-### Key metrics
-- **Peak Net Grid Load** — residual utility supply requirement after DER contribution
-- **Grid Capacity Released** — Traditional peak − Coordinated peak (MW)
-- **Campus Equivalents** — illustrative comparison: capacity released ÷ assumed campus size
-- **SOC** — State of Charge tracked with 95 % round-trip efficiency
-
----
-
-## Project structure
-
-```
-src/
-  simulation/       Pure TypeScript engine (no React dependencies)
-    engine.ts       Three-tier simulation core
-    storage.ts      Battery charge/discharge physics
-    solarCurve.ts   Illustrative Florida solar factor curve
-    demandCurve.ts  Illustrative Florida residential demand curve
-    types.ts        Shared type definitions
-    engine.test.ts  Unit tests (Vitest)
-    engine.diagnostic.test.ts  SOC conservation and comparison tests
-  components/       React UI components
-    Controls.tsx    Scenario input controls
-    SummaryPanel.tsx  Key metrics display
-    Charts.tsx      Recharts visualizations
-    AssumptionsPanel.tsx  Model assumptions and sources
-    Tooltip.tsx     Accessible acronym tooltips
-  data/
-    floridaDefaults.ts  Default Florida scenario configuration
-docs/
-  technical-spec.md
-  assumptions-and-sources.md
-```
-
----
-
-## Built with
-
-- [React](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
-- [Vite](https://vitejs.dev/) (build/dev server)
-- [Vitest](https://vitest.dev/) (unit tests)
-- [Recharts](https://recharts.org/) (data visualization)
-- Specification-driven, AI-assisted development (Devin / Claude / Windsurf)
-
----
-
-## Status
-
-**Release 1 — MVP complete.** See [`docs/technical-spec.md`](docs/technical-spec.md) for the full model specification and [`docs/assumptions-and-sources.md`](docs/assumptions-and-sources.md) for data sources and caveats.
+- `docs/technical-spec.md` — simulation model specification
+- `docs/assumptions-and-sources.md` — data sources and caveats
