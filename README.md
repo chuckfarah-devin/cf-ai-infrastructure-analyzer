@@ -94,3 +94,12 @@ services and need no key.
 
 - `docs/technical-spec.md` — simulation model specification
 - `docs/assumptions-and-sources.md` — data sources and caveats
+
+## License
+
+© 2026 Chuck Farah. All rights reserved — see [`LICENSE`](LICENSE).
+This project is shared publicly for education and portfolio
+demonstration; no general reuse license is granted. Third-party
+libraries, datasets, and imagery retain their own licenses — see
+[`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md). Developed with
+AI assistance under human direction and review.
