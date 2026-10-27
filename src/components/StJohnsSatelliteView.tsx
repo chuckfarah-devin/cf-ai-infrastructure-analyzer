@@ -141,10 +141,15 @@ function addMapLayer(map: Map, config: EnvironmentalLayerConfig, data?: Environm
                 ['in', '0.2 PCT', ['coalesce', ['get', 'ZONE_SUBTY'], '']],
               ],
               '#f59e0b',
-              // Zone X, minimal hazard — pale lavender
-              ['==', ['get', 'FLD_ZONE'], 'X'],
+              // Zone X, minimal hazard — only when the subtype explicitly
+              // records minimal hazard
+              [
+                'all',
+                ['==', ['get', 'FLD_ZONE'], 'X'],
+                ['in', 'MINIMAL', ['coalesce', ['get', 'ZONE_SUBTY'], '']],
+              ],
               '#ddd6fe',
-              // Unrecognized category — neutral slate; see FEMA source
+              // Missing/unrecognized zones or subtypes — neutral slate
               '#cbd5e1',
             ]
           : config.color,

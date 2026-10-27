@@ -103,7 +103,7 @@ export function getEnvironmentalLayers(coordinates: SiteCoordinates): Environmen
       symbolLabelField: 'FLD_ZONE',
       color: '#a855f7',
       geometry: 'polygon',
-      legendLabel: 'Fill color shows FEMA risk category: purple = Special Flood Hazard Area / 1% annual chance (zones A, AE, AH, AO, AR, A99, V, VE); amber = moderate risk, 0.2% annual chance (Zone X); pale lavender = minimal-hazard Zone X; dark gray = Zone D, risk undetermined; pale slate = unclassified category — see the FEMA source. Purple lines are zone boundaries; white labels show the zone designation code (e.g., AE, X, “AE FLOODWAY”). Shading does not imply equal risk across zones. Other FEMA annotations such as map-revision records are not displayed.',
+      legendLabel: 'Fill color shows FEMA risk category: purple = Special Flood Hazard Area / 1% annual chance (zones A, AE, AH, AO, AR, A99, V, VE); amber = moderate risk, 0.2% annual chance (Zone X); pale lavender = minimal-hazard Zone X (only where the FEMA subtype explicitly records minimal hazard); dark gray = Zone D, risk undetermined; pale slate = unclassified or unrecognized category/subtype — see the FEMA source. Purple lines are zone boundaries; white labels show the zone designation code (e.g., AE, X, “AE FLOODWAY”). Shading does not imply equal risk across zones. Other FEMA annotations such as map-revision records are not displayed.',
     },
     {
       id: 'conservation',
