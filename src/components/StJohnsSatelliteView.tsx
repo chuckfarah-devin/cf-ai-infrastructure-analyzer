@@ -21,8 +21,27 @@ import {
 
 setWorkerUrl(maplibreWorkerUrl);
 
+/** Structural subset of CandidateSite — also satisfied by FloridaProject adapters. */
+export interface SatelliteSite {
+  name: string;
+  city: string;
+  county: string;
+  coordinates: { lat: number; lon: number };
+  coordinateSource: { label: string; date?: string; url?: string };
+  classification: string;
+  classificationLabel: string;
+  markerColor: string;
+  whyIncluded: string;
+  /**
+   * 'site' (default): documented location marker + environmental screening.
+   * 'area': broad-area context view — no precise pin, no environmental
+   * screening; used when only a general project area is documented.
+   */
+  viewMode?: 'site' | 'area';
+}
+
 interface SiteSatelliteViewProps {
-  site: CandidateSite;
+  site: CandidateSite | SatelliteSite;
   onBack: () => void;
 }
 
@@ -48,7 +67,7 @@ function createInitialLayerStates(layers: EnvironmentalLayerConfig[]): Record<En
 }
 
 function mapLayerIds(id: EnvironmentalLayerId): string[] {
-  return [`environment-${id}-fill`, `environment-${id}-outline`, `environment-${id}-line`, `environment-${id}-raster`];
+  return [`environment-${id}-fill`, `environment-${id}-outline`, `environment-${id}-line`, `environment-${id}-raster`, `environment-${id}-label`];
 }
 
 function removeMapLayer(map: Map, id: EnvironmentalLayerId) {
@@ -100,12 +119,35 @@ function addMapLayer(map: Map, config: EnvironmentalLayerConfig, data?: Environm
   });
 
   if (config.geometry === 'polygon') {
+    const femaCategories = config.symbolLabelField === 'FLD_ZONE';
     map.addLayer({
       id: `environment-${config.id}-fill`,
       type: 'fill',
       source: sourceId,
       paint: {
-        'fill-color': config.color,
+        'fill-color': femaCategories
+          ? [
+              'case',
+              // Special Flood Hazard Areas (1% annual chance) — purple
+              ['in', ['get', 'FLD_ZONE'], ['literal', ['A', 'AE', 'AH', 'AO', 'AR', 'A99', 'V', 'VE']]],
+              '#a855f7',
+              // Undetermined risk — gray
+              ['==', ['get', 'FLD_ZONE'], 'D'],
+              '#9ca3af',
+              // Zone X, moderate risk (0.2% annual chance) — amber
+              [
+                'all',
+                ['==', ['get', 'FLD_ZONE'], 'X'],
+                ['in', '0.2 PCT', ['coalesce', ['get', 'ZONE_SUBTY'], '']],
+              ],
+              '#f59e0b',
+              // Zone X, minimal hazard — pale lavender
+              ['==', ['get', 'FLD_ZONE'], 'X'],
+              '#ddd6fe',
+              // Unrecognized category — neutral slate; see FEMA source
+              '#cbd5e1',
+            ]
+          : config.color,
         'fill-opacity': 0.3,
       },
     });
@@ -119,6 +161,32 @@ function addMapLayer(map: Map, config: EnvironmentalLayerConfig, data?: Environm
         'line-opacity': 0.95,
       },
     });
+    if (config.symbolLabelField === 'FLD_ZONE') {
+      // FEMA flood zones: white haloed zone codes; floodway zones append FLOODWAY.
+      // Symbol layer auto-declutters (text-allow-overlap defaults to false) and
+      // only appears at parcel-relevant zooms to avoid regional clutter.
+      map.addLayer({
+        id: `environment-${config.id}-label`,
+        type: 'symbol',
+        source: sourceId,
+        minzoom: 11,
+        layout: {
+          'text-field': [
+            'concat',
+            ['coalesce', ['get', 'FLD_ZONE'], ''],
+            ['case', ['==', ['get', 'ZONE_SUBTY'], 'FLOODWAY'], ' FLOODWAY', ''],
+          ],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 11, 11, 14, 14, 17, 18],
+          'text-font': ['Noto Sans Bold'],
+          'text-max-width': 8,
+        },
+        paint: {
+          'text-color': '#ffffff',
+          'text-halo-color': '#1e1b4b',
+          'text-halo-width': 2,
+        },
+      });
+    }
   } else {
     map.addLayer({
       id: `environment-${config.id}-line`,
@@ -134,6 +202,7 @@ function addMapLayer(map: Map, config: EnvironmentalLayerConfig, data?: Environm
 }
 
 export default function SiteSatelliteView({ site, onBack }: SiteSatelliteViewProps) {
+  const isAreaView = 'viewMode' in site && site.viewMode === 'area';
   const environmentalLayers = useMemo(
     () => getEnvironmentalLayers(site.coordinates),
     [site.coordinates.lat, site.coordinates.lon],
@@ -164,11 +233,12 @@ export default function SiteSatelliteView({ site, onBack }: SiteSatelliteViewPro
     setMapError(null);
     setMapReady(false);
     const styleUrl = `https://basemapstyles-api.arcgis.com/arcgis/rest/services/styles/v2/styles/arcgis/imagery?token=${encodeURIComponent(apiKey)}`;
+    const isAreaView = 'viewMode' in site && site.viewMode === 'area';
     const map = new Map({
       container: mapContainerRef.current,
       style: styleUrl,
       center: [site.coordinates.lon, site.coordinates.lat],
-      zoom: 14,
+      zoom: isAreaView ? 10.5 : 14,
       minZoom: 8,
       maxZoom: 19,
       attributionControl: false,
@@ -179,21 +249,24 @@ export default function SiteSatelliteView({ site, onBack }: SiteSatelliteViewPro
     map.addControl(new AttributionControl({ compact: true }), 'bottom-right');
     map.on('load', () => setMapReady(true));
 
-    const markerElement = document.createElement('div');
-    markerElement.className = 'satellite-site-marker';
-    markerElement.style.backgroundColor = site.markerColor;
-    markerElement.setAttribute('aria-label', 'Approximate Site Location — Not a Property Boundary');
+    let marker: Marker | undefined;
+    if (!isAreaView) {
+      const markerElement = document.createElement('div');
+      markerElement.className = 'satellite-site-marker';
+      markerElement.style.backgroundColor = site.markerColor;
+      markerElement.setAttribute('aria-label', 'Approximate Site Location — Not a Property Boundary');
 
-    const marker = new Marker({ element: markerElement, anchor: 'bottom' })
-      .setLngLat([site.coordinates.lon, site.coordinates.lat])
-      .setPopup(
-        new Popup({ offset: 22, closeButton: false }).setHTML(
-          '<strong>Approximate Site Location</strong><br><span>Not a Property Boundary</span>',
-        ),
-      )
-      .addTo(map);
+      marker = new Marker({ element: markerElement, anchor: 'bottom' })
+        .setLngLat([site.coordinates.lon, site.coordinates.lat])
+        .setPopup(
+          new Popup({ offset: 22, closeButton: false }).setHTML(
+            '<strong>Approximate Site Location</strong><br><span>Not a Property Boundary</span>',
+          ),
+        )
+        .addTo(map);
 
-    marker.togglePopup();
+      marker.togglePopup();
+    }
 
     map.on('error', (event: MapErrorEvent) => {
       const message = event.error?.message ?? '';
@@ -216,7 +289,7 @@ export default function SiteSatelliteView({ site, onBack }: SiteSatelliteViewPro
 
     return () => {
       Object.values(requestControllersRef.current).forEach(controller => controller?.abort());
-      marker.remove();
+      marker?.remove();
       map.remove();
       mapRef.current = null;
     };
@@ -337,8 +410,8 @@ export default function SiteSatelliteView({ site, onBack }: SiteSatelliteViewPro
 
       <div className="satellite-view-heading">
         <div>
-          <h3 id="satellite-view-title">{site.name} — Satellite View</h3>
-          <p>{site.city}, {site.county} County · Interactive site context from Esri World Imagery.</p>
+          <h3 id="satellite-view-title">{site.name} — {isAreaView ? 'General Area View' : 'Satellite View'}</h3>
+          <p>{site.city}, {site.county} County · {isAreaView ? 'Broad-area context' : 'Interactive site context'} from Esri World Imagery.</p>
         </div>
         <span className={`satellite-classification ${site.classification}`}>{site.classificationLabel}</span>
       </div>
@@ -346,8 +419,17 @@ export default function SiteSatelliteView({ site, onBack }: SiteSatelliteViewPro
       <div className="satellite-location-notice">
         <MapPin size={16} />
         <div>
-          <strong>Approximate Site Location — Not a Property Boundary</strong>
-          <span>The marker represents the documented general facility location only. No parcel or redevelopment boundary is shown.</span>
+          {isAreaView ? (
+            <>
+              <strong>Approximate project area — site boundaries unverified</strong>
+              <span>This view centers on the general reported area only. No site pin, parcel boundary, or site-specific environmental screening is shown because the exact project site is not confirmed in the records reviewed.</span>
+            </>
+          ) : (
+            <>
+              <strong>Approximate Site Location — Not a Property Boundary</strong>
+              <span>The marker represents the documented general facility location only. No parcel or redevelopment boundary is shown.</span>
+            </>
+          )}
         </div>
       </div>
 
@@ -356,7 +438,7 @@ export default function SiteSatelliteView({ site, onBack }: SiteSatelliteViewPro
         <span>{site.whyIncluded}</span>
       </div>
 
-      <section className="environmental-context" aria-labelledby="environmental-context-title">
+      {!isAreaView && <section className="environmental-context" aria-labelledby="environmental-context-title">
           <div className="environmental-context-heading">
             <Layers size={18} />
             <div>
@@ -416,7 +498,7 @@ export default function SiteSatelliteView({ site, onBack }: SiteSatelliteViewPro
           <p className="environmental-context-disclaimer">
             These layers show a fixed surrounding context area for screening and education. They do not identify property boundaries, buildable land, regulatory jurisdiction, or restoration locations. Restoration cannot replace wetland protection or contamination remediation.
           </p>
-      </section>
+      </section>}
 
       <div className="satellite-map-frame">
         <div ref={mapContainerRef} className="satellite-map" aria-label={`Interactive satellite map of the approximate ${site.name} location`} />

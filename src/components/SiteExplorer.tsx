@@ -38,9 +38,10 @@ import { getFacilityVisionProfile } from '../data/facilityVisionData';
 
 const SiteSatelliteView = lazy(() => import('./StJohnsSatelliteView'));
 const ResponsibleFacilityVision = lazy(() => import('./ResponsibleFacilityVision'));
+const FloridaProjects = lazy(() => import('./FloridaProjects').then(m => ({ default: m.FloridaProjects })));
 
 // ── Confidence badge ─────────────────────────────────────────
-function ConfidenceBadge({ level }: { level: ConfidenceLevel }) {
+export function ConfidenceBadge({ level }: { level: ConfidenceLevel }) {
   const config = {
     verified: { icon: CheckCircle, label: 'Verified Public', color: '#16a34a' },
     inferred: { icon: AlertTriangle, label: 'Inferred', color: '#ca8a04' },
@@ -57,7 +58,7 @@ function ConfidenceBadge({ level }: { level: ConfidenceLevel }) {
 }
 
 // ── Annotated fact display ───────────────────────────────────
-function FactRow({ fact, label }: { fact: AnnotatedFact; label: string }) {
+export function FactRow({ fact, label }: { fact: AnnotatedFact; label: string }) {
   return (
     <div className="site-fact-row">
       <div className="site-fact-header">
@@ -419,6 +420,7 @@ function SiteDetail({
 
 // ── Main Site Explorer component ─────────────────────────────
 export function SiteExplorer() {
+  const [section, setSection] = useState<'reuse' | 'projects'>('reuse');
   const [selectedSiteId, setSelectedSiteId] = useState<string>(CANDIDATE_SITES[0].id);
   const [viewMode, setViewMode] = useState<'overview' | 'satellite' | 'vision'>('overview');
   const selectedSite = CANDIDATE_SITES.find(s => s.id === selectedSiteId) ?? CANDIDATE_SITES[0];
@@ -454,12 +456,38 @@ export function SiteExplorer() {
         <div>
           <h2>Florida Infrastructure &amp; Reuse Site Explorer</h2>
           <p className="site-explorer-subtitle">
-            Four Florida sites illustrate different questions involving AI infrastructure, energy-site reuse,
-            environmental stewardship, and conditional redevelopment — prioritizing previously developed sites
-            over undisturbed land. Not all four are proposed data centers.
+            {section === 'reuse'
+              ? 'Four Florida sites illustrate different questions involving AI infrastructure, energy-site reuse, environmental stewardship, and conditional redevelopment — prioritizing previously developed sites over undisturbed land. Not all four are proposed data centers.'
+              : 'Documented Florida infrastructure proposals and facilities, verified against public records where available. Each profile distinguishes agency records, developer claims, and unresolved questions.'}
           </p>
         </div>
+        <div className="site-explorer-segments" role="tablist" aria-label="Explorer section">
+          <button
+            role="tab"
+            aria-selected={section === 'reuse'}
+            className={`segment-btn ${section === 'reuse' ? 'active' : ''}`}
+            onClick={() => setSection('reuse')}
+          >
+            Brownfield &amp; Reuse Sites
+          </button>
+          <button
+            role="tab"
+            aria-selected={section === 'projects'}
+            className={`segment-btn ${section === 'projects' ? 'active' : ''}`}
+            onClick={() => setSection('projects')}
+          >
+            Florida Projects
+          </button>
+        </div>
       </div>
+
+      {section === 'projects' ? (
+        <Suspense fallback={<div className="satellite-loading">Loading Florida Projects…</div>}>
+          <FloridaProjects />
+        </Suspense>
+      ) : null}
+
+      {section === 'reuse' && (<>
 
       <div className="site-explorer-body">
         {/* Left: Florida map with markers */}
@@ -596,6 +624,8 @@ export function SiteExplorer() {
           any development decisions.
         </p>
       </div>
+      </>
+      )}
     </div>
   );
 }

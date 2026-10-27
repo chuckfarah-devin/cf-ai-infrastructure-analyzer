@@ -11,6 +11,8 @@ export interface EnvironmentalLayerConfig {
   queryUrl: string;
   rasterTiles?: string[];
   rasterValidation?: 'image' | 'count';
+  /** GeoJSON property rendered as a map symbol label (vector layers only). */
+  symbolLabelField?: string;
   color: string;
   geometry: 'polygon' | 'line' | 'raster';
   legendLabel: string;
@@ -91,13 +93,17 @@ export function getEnvironmentalLayers(coordinates: SiteCoordinates): Environmen
       sourcePage: 'https://hazards.fema.gov/femaportal/resources/flood_map_svc.htm',
       sourceDate: 'Current effective NFHL service; revised data is added continuously.',
       limitation: 'Screening context only. Consult the official effective FIRM/FIRMette and site-specific elevation information for a determination.',
-      queryUrl: `https://hazards.fema.gov/arcgis/services/public/NFHLWMS/MapServer/WMSServer?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=28&STYLES=default&FORMAT=image/png&TRANSPARENT=true&SRS=EPSG:4326&BBOX=${regionalEnvelope}&WIDTH=2&HEIGHT=2`,
-      rasterTiles: [
-        'https://hazards.fema.gov/arcgis/services/public/NFHLWMS/MapServer/WMSServer?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=28&STYLES=default&FORMAT=image/png&TRANSPARENT=true&SRS=EPSG:3857&BBOX={bbox-epsg-3857}&WIDTH=256&HEIGHT=256',
-      ],
+      // Vector query against the NFHL "Flood Hazard Zones" layer (S_Fld_Haz_Ar)
+      // so zone fills, boundaries, and labels can be rendered readably.
+      queryUrl: arcGisQuery(
+        'https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/28',
+        'FLD_ZONE,ZONE_SUBTY,SFHA_TF',
+        regionalEnvelope,
+      ),
+      symbolLabelField: 'FLD_ZONE',
       color: '#a855f7',
-      geometry: 'raster',
-      legendLabel: 'FEMA effective flood-hazard area',
+      geometry: 'polygon',
+      legendLabel: 'Fill color shows FEMA risk category: purple = Special Flood Hazard Area / 1% annual chance (zones A, AE, AH, AO, AR, A99, V, VE); amber = moderate risk, 0.2% annual chance (Zone X); pale lavender = minimal-hazard Zone X; dark gray = Zone D, risk undetermined; pale slate = unclassified category — see the FEMA source. Purple lines are zone boundaries; white labels show the zone designation code (e.g., AE, X, “AE FLOODWAY”). Shading does not imply equal risk across zones. Other FEMA annotations such as map-revision records are not displayed.',
     },
     {
       id: 'conservation',
