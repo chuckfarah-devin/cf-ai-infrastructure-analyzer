@@ -6,11 +6,12 @@
  * and a detailed profile for the selected site.
  */
 
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import {
   Building2, AlertTriangle, CheckCircle, HelpCircle,
   Info, ExternalLink, ChevronDown, ChevronRight, Leaf, Users,
-  Droplets, Shield, Eye, Zap, TreePine
+  Droplets, Shield, Eye, Zap, TreePine, MessageSquare,
+  CircleDot, CircleDashed, CircleHelp, Satellite, Volume2, Lightbulb, Truck
 } from 'lucide-react';
 import {
   FLORIDA_MAINLAND_PATH,
@@ -25,10 +26,22 @@ import {
   type AnnotatedFact,
   type ConfidenceLevel,
   type EnvironmentalTradeoff,
+  type CommunityEnvironmentalOverview,
+  type OverviewItem,
 } from '../data/siteExplorerData';
+import {
+  COMMUNITY_IMPACT_PROFILES,
+  type CommunityEvidenceType,
+  type CommunityImpactProfile,
+} from '../data/communityImpactData';
+import { getFacilityVisionProfile } from '../data/facilityVisionData';
+
+const SiteSatelliteView = lazy(() => import('./StJohnsSatelliteView'));
+const ResponsibleFacilityVision = lazy(() => import('./ResponsibleFacilityVision'));
+const FloridaProjects = lazy(() => import('./FloridaProjects').then(m => ({ default: m.FloridaProjects })));
 
 // ── Confidence badge ─────────────────────────────────────────
-function ConfidenceBadge({ level }: { level: ConfidenceLevel }) {
+export function ConfidenceBadge({ level }: { level: ConfidenceLevel }) {
   const config = {
     verified: { icon: CheckCircle, label: 'Verified Public', color: '#16a34a' },
     inferred: { icon: AlertTriangle, label: 'Inferred', color: '#ca8a04' },
@@ -45,7 +58,7 @@ function ConfidenceBadge({ level }: { level: ConfidenceLevel }) {
 }
 
 // ── Annotated fact display ───────────────────────────────────
-function FactRow({ fact, label }: { fact: AnnotatedFact; label: string }) {
+export function FactRow({ fact, label }: { fact: AnnotatedFact; label: string }) {
   return (
     <div className="site-fact-row">
       <div className="site-fact-header">
@@ -125,6 +138,163 @@ function TradeoffCard({ tradeoff }: { tradeoff: EnvironmentalTradeoff }) {
   );
 }
 
+// ── Status indicator for overview items ──────────────────────
+function StatusIndicator({ status }: { status: OverviewItem['status'] }) {
+  const config = {
+    documented: { icon: CircleDot, label: 'Documented', color: '#16a34a' },
+    possible: { icon: CircleDashed, label: 'Possible', color: '#2563eb' },
+    unknown: { icon: CircleHelp, label: 'Unknown', color: '#94a3b8' },
+  }[status];
+  const Icon = config.icon;
+  return (
+    <span className="overview-status" style={{ color: config.color }} title={config.label}>
+      <Icon size={14} />
+    </span>
+  );
+}
+
+// ── Community & Environmental Overview ───────────────────────
+function CommunityOverview({ overview }: { overview: CommunityEnvironmentalOverview }) {
+  const cards: { key: string; title: string; icon: React.ElementType; iconColor: string; card: { items: OverviewItem[] } }[] = [
+    { key: 'land', title: 'Land & Habitat', icon: TreePine, iconColor: '#16a34a', card: overview.landHabitat },
+    { key: 'water', title: 'Water & Environmental Restoration', icon: Droplets, iconColor: '#2563eb', card: overview.waterEnvironment },
+    { key: 'neighborhood', title: 'Neighborhood Protection', icon: Shield, iconColor: '#7c3aed', card: overview.neighborhoodProtection },
+    { key: 'community', title: 'Community Benefits', icon: Users, iconColor: '#ea580c', card: overview.communityBenefits },
+  ];
+
+  return (
+    <div className="community-overview">
+      <div className="community-overview-header">
+        <h4>Community & Environmental Overview</h4>
+        <p className="community-overview-subtitle">
+          Brownfield-first, community-benefit infrastructure planning
+        </p>
+        <div className="overview-status-legend">
+          <span className="overview-legend-item">
+            <StatusIndicator status="documented" /> Documented
+          </span>
+          <span className="overview-legend-item">
+            <StatusIndicator status="possible" /> Possible
+          </span>
+          <span className="overview-legend-item">
+            <StatusIndicator status="unknown" /> Requires Investigation
+          </span>
+        </div>
+      </div>
+
+      <div className="community-overview-grid">
+        {cards.map(({ key, title, icon: CardIcon, iconColor, card }) => (
+          <div key={key} className="overview-card">
+            <div className="overview-card-header">
+              <CardIcon size={18} style={{ color: iconColor }} />
+              <h5>{title}</h5>
+            </div>
+            <ul className="overview-card-items">
+              {card.items.map((item, i) => (
+                <li key={i} className={`overview-item overview-item-${item.status}`}>
+                  <StatusIndicator status={item.status} />
+                  <span>{item.text}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+
+      <div className="key-questions">
+        <div className="key-questions-header">
+          <MessageSquare size={16} style={{ color: '#b45309' }} />
+          <h5>Key Questions Before Approval</h5>
+        </div>
+        <p className="key-questions-note">
+          Practical questions a county commissioner or planning board could ask a developer about this site.
+        </p>
+        <ol className="key-questions-list">
+          {overview.keyQuestionsBeforeApproval.map((q, i) => (
+            <li key={i}>{q}</li>
+          ))}
+        </ol>
+      </div>
+    </div>
+  );
+}
+
+const COMMUNITY_EVIDENCE_CONFIG: Record<CommunityEvidenceType, { label: string; className: string }> = {
+  documented: { label: 'Documented Public Record', className: 'documented' },
+  'developer-statement': { label: 'Owner / Developer Statement', className: 'statement' },
+  'potential-protection': { label: 'Potential Protection', className: 'protection' },
+  unresolved: { label: 'Unresolved Question', className: 'unresolved' },
+};
+
+function CommunityImpactProtection({ profile }: { profile: CommunityImpactProfile }) {
+  const icons: Record<string, React.ElementType> = {
+    noise: Volume2,
+    water: Droplets,
+    lighting: Lightbulb,
+    traffic: Truck,
+  };
+
+  return (
+    <section className="community-protection" aria-labelledby={`community-protection-${profile.siteId}`}>
+      <div className="community-protection-header">
+        <Shield size={18} />
+        <div>
+          <h4 id={`community-protection-${profile.siteId}`}>Community Impact & Protection</h4>
+          <p>What is documented, what has been claimed, what could be required, and what remains unanswered.</p>
+        </div>
+      </div>
+      <div className="community-evidence-legend">
+        {Object.values(COMMUNITY_EVIDENCE_CONFIG).map(item => (
+          <span key={item.className} className={`community-evidence-badge ${item.className}`}>{item.label}</span>
+        ))}
+      </div>
+      <p className="community-evidence-note">
+        Evidence type identifies who provided the information. Confidence describes the record supporting that label. “Verified Public” beside an owner or developer statement means the statement is publicly documented—not that its promised outcome has been independently verified.
+      </p>
+      <div className="community-protection-grid">
+        {profile.categories.map(category => {
+          const Icon = icons[category.id];
+          return (
+            <article key={category.id} className="community-protection-card">
+              <div className="community-protection-card-header">
+                <Icon size={17} />
+                <h5>{category.title}</h5>
+              </div>
+              <div className="community-protection-items">
+                {category.items.map((item, index) => {
+                  const evidence = COMMUNITY_EVIDENCE_CONFIG[item.evidenceType];
+                  return (
+                    <div key={index} className="community-protection-item">
+                      <div className="community-protection-item-header">
+                        <span className={`community-evidence-badge ${evidence.className}`}>{evidence.label}</span>
+                        <ConfidenceBadge level={item.confidence} />
+                      </div>
+                      <p>{item.text}</p>
+                      {item.source && (
+                        <div className="community-protection-source">
+                          Source: {item.source.label}{item.source.date ? ` (${item.source.date})` : ''}
+                          {item.source.url && (
+                            <a href={item.source.url} target="_blank" rel="noopener noreferrer" className="source-link">
+                              <ExternalLink size={10} />
+                            </a>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </article>
+          );
+        })}
+      </div>
+      <p className="community-protection-disclaimer">
+        Potential protections are options for investigation or enforceable approval conditions. They are not verified commitments and their effectiveness has not been established for this site.
+      </p>
+    </section>
+  );
+}
+
 // ── Classification badge ─────────────────────────────────────
 function ClassificationBadge({ site }: { site: CandidateSite }) {
   const colors = {
@@ -144,7 +314,18 @@ function ClassificationBadge({ site }: { site: CandidateSite }) {
 }
 
 // ── Site detail panel ────────────────────────────────────────
-function SiteDetail({ site }: { site: CandidateSite }) {
+function SiteDetail({
+  site,
+  onOpenSatellite,
+  onOpenVision,
+}: {
+  site: CandidateSite;
+  onOpenSatellite: () => void;
+  onOpenVision: () => void;
+}) {
+  const communityImpact = COMMUNITY_IMPACT_PROFILES.find(profile => profile.siteId === site.id);
+  const facilityVision = getFacilityVisionProfile(site.id);
+
   return (
     <div className="site-detail">
       <div className="site-detail-header">
@@ -156,6 +337,24 @@ function SiteDetail({ site }: { site: CandidateSite }) {
       </div>
 
       <p className="site-detail-why">{site.whyIncluded}</p>
+
+      <div className="site-action-buttons">
+        <button type="button" className="satellite-view-btn" onClick={onOpenSatellite}>
+          <Satellite size={16} />
+          Explore Satellite View
+        </button>
+        {facilityVision && (
+          <button type="button" className="facility-vision-btn" onClick={onOpenVision}>
+            <Lightbulb size={16} />
+            Explore Responsible Design Vision
+          </button>
+        )}
+      </div>
+
+      {/* Community & Environmental Overview */}
+      <CommunityOverview overview={site.communityOverview} />
+
+      {communityImpact && <CommunityImpactProtection profile={communityImpact} />}
 
       {/* Core profile */}
       <div className="site-detail-section">
@@ -221,19 +420,74 @@ function SiteDetail({ site }: { site: CandidateSite }) {
 
 // ── Main Site Explorer component ─────────────────────────────
 export function SiteExplorer() {
+  const [section, setSection] = useState<'reuse' | 'projects'>('reuse');
   const [selectedSiteId, setSelectedSiteId] = useState<string>(CANDIDATE_SITES[0].id);
+  const [viewMode, setViewMode] = useState<'overview' | 'satellite' | 'vision'>('overview');
   const selectedSite = CANDIDATE_SITES.find(s => s.id === selectedSiteId) ?? CANDIDATE_SITES[0];
+
+  if (viewMode === 'satellite') {
+    return (
+      <div className="site-explorer site-explorer-satellite">
+        <Suspense fallback={<div className="satellite-loading">Loading satellite map…</div>}>
+          <SiteSatelliteView key={selectedSite.id} site={selectedSite} onBack={() => setViewMode('overview')} />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (viewMode === 'vision') {
+    return (
+      <div className="site-explorer site-explorer-vision">
+        <Suspense fallback={<div className="satellite-loading">Loading facility vision…</div>}>
+          <ResponsibleFacilityVision
+            key={selectedSite.id}
+            site={selectedSite}
+            onBack={() => setViewMode('overview')}
+            onOpenSatellite={() => setViewMode('satellite')}
+          />
+        </Suspense>
+      </div>
+    );
+  }
 
   return (
     <div className="site-explorer">
       <div className="site-explorer-header">
         <div>
-          <h2>AI Data Center Site Explorer</h2>
+          <h2>Florida Infrastructure &amp; Reuse Site Explorer</h2>
           <p className="site-explorer-subtitle">
-            Florida redevelopment opportunities — prioritizing previously developed sites over undisturbed land
+            {section === 'reuse'
+              ? 'Four Florida sites illustrate different questions involving AI infrastructure, energy-site reuse, environmental stewardship, and conditional redevelopment — prioritizing previously developed sites over undisturbed land. Not all four are proposed data centers.'
+              : 'Documented Florida infrastructure proposals and facilities, verified against public records where available. Each profile distinguishes agency records, developer claims, and unresolved questions.'}
           </p>
         </div>
+        <div className="site-explorer-segments" role="tablist" aria-label="Explorer section">
+          <button
+            role="tab"
+            aria-selected={section === 'reuse'}
+            className={`segment-btn ${section === 'reuse' ? 'active' : ''}`}
+            onClick={() => setSection('reuse')}
+          >
+            Brownfield &amp; Reuse Sites
+          </button>
+          <button
+            role="tab"
+            aria-selected={section === 'projects'}
+            className={`segment-btn ${section === 'projects' ? 'active' : ''}`}
+            onClick={() => setSection('projects')}
+          >
+            Florida Projects
+          </button>
+        </div>
       </div>
+
+      {section === 'projects' ? (
+        <Suspense fallback={<div className="satellite-loading">Loading Florida Projects…</div>}>
+          <FloridaProjects />
+        </Suspense>
+      ) : null}
+
+      {section === 'reuse' && (<>
 
       <div className="site-explorer-body">
         {/* Left: Florida map with markers */}
@@ -345,9 +599,7 @@ export function SiteExplorer() {
                   </span>
                 </span>
                 <span className={`table-classification ${site.classification}`}>
-                  {site.classification === 'redevelopment_opportunity' ? 'Opportunity'
-                    : site.classification === 'active_proposal' ? 'Active'
-                    : 'Case Study'}
+                  {site.classificationLabel}
                 </span>
               </button>
             ))}
@@ -356,7 +608,11 @@ export function SiteExplorer() {
 
         {/* Right: selected site detail */}
         <div className="site-explorer-detail-panel">
-          <SiteDetail site={selectedSite} />
+          <SiteDetail
+            site={selectedSite}
+            onOpenSatellite={() => setViewMode('satellite')}
+            onOpenVision={() => setViewMode('vision')}
+          />
         </div>
       </div>
 
@@ -368,6 +624,8 @@ export function SiteExplorer() {
           any development decisions.
         </p>
       </div>
+      </>
+      )}
     </div>
   );
 }

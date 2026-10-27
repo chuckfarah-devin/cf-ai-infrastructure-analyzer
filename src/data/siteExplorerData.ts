@@ -44,6 +44,26 @@ export interface EnvironmentalTradeoff {
   confidence: ConfidenceLevel;
 }
 
+/** A single item in the Community & Environmental Overview cards. */
+export interface OverviewItem {
+  text: string;
+  status: 'documented' | 'possible' | 'unknown';
+}
+
+/** One of the four Community & Environmental Overview cards. */
+export interface OverviewCard {
+  items: OverviewItem[];
+}
+
+/** Community & Environmental Overview for one site. */
+export interface CommunityEnvironmentalOverview {
+  landHabitat: OverviewCard;
+  waterEnvironment: OverviewCard;
+  neighborhoodProtection: OverviewCard;
+  communityBenefits: OverviewCard;
+  keyQuestionsBeforeApproval: string[];
+}
+
 export interface CandidateSite {
   id: string;
   name: string;
@@ -52,6 +72,7 @@ export interface CandidateSite {
   county: string;
   city: string;
   coordinates: { lat: number; lon: number };
+  coordinateSource: SourceCitation;
   /** Position on the Census-based Florida SVG (viewBox 0 0 400 386) */
   svgPosition: { x: number; y: number };
   markerColor: string;
@@ -67,7 +88,10 @@ export interface CandidateSite {
   keyUncertainties: string[];
   whyIncluded: string;
 
-  // Community & environmental tradeoffs
+  // Community & Environmental Overview (four-card structure)
+  communityOverview: CommunityEnvironmentalOverview;
+
+  // Community & environmental tradeoffs (detailed)
   tradeoffs: EnvironmentalTradeoff[];
 }
 
@@ -81,8 +105,9 @@ const stJohns: CandidateSite = {
   classificationLabel: 'Potential Redevelopment Opportunity',
   county: 'Duval',
   city: 'Jacksonville',
-  coordinates: { lat: 30.4167, lon: -81.5333 },
-  svgPosition: { x: 315, y: 43 },
+  coordinates: { lat: 30.4281, lon: -81.548331 },
+  coordinateSource: { label: 'Florida DEP storage-tank facility inspection record, 11201 New Berlin Road', date: 'Sep 2016' },
+  svgPosition: { x: 314.2, y: 42.3 },
   markerColor: '#3b82f6',
 
   formerUse: {
@@ -146,6 +171,49 @@ const stJohns: CandidateSite = {
   ],
   whyIncluded: 'Largest genuine redevelopment opportunity among retired Florida power plants. Active planning by JEA with both new generation and industrial reuse on the same 2,000-acre site. Demonstrates the complexity of mixed brownfield redevelopment.',
 
+  communityOverview: {
+    landHabitat: {
+      items: [
+        { text: 'Former 1,252 MW coal plant demolished — reuses previously developed industrial land rather than undisturbed habitat.', status: 'documented' },
+        { text: 'Site is adjacent to St. Johns River and coastal marshes; thoughtful design could maintain wildlife corridors along the river margin.', status: 'possible' },
+        { text: 'Native Florida landscaping (live oak, slash pine, sabal palm) could provide visual screening along Heckscher Drive and New Berlin Road.', status: 'possible' },
+        { text: 'Whether coal combustion residuals (ash) remain on-site and require remediation before development is not established from public records.', status: 'unknown' },
+      ],
+    },
+    waterEnvironment: {
+      items: [
+        { text: 'Modern stormwater systems on the redeveloped site would likely improve runoff quality compared to the former coal plant operations.', status: 'possible' },
+        { text: 'Coal combustion residual contamination and ash pond status require Phase I/II Environmental Site Assessment.', status: 'unknown' },
+        { text: 'Data center cooling requires significant water volumes; consumptive use permit from SJRWMD would be needed.', status: 'documented' },
+        { text: 'Reclaimed water availability for cooling has not been publicly evaluated.', status: 'unknown' },
+      ],
+    },
+    neighborhoodProtection: {
+      items: [
+        { text: 'Large industrial development could increase truck traffic on Heckscher Drive and New Berlin Road.', status: 'documented' },
+        { text: '24/7 data center operations generate continuous noise from cooling systems and backup generators.', status: 'documented' },
+        { text: 'A state-funded traffic impact study was proposed for the Gateway Commerce Center area.', status: 'documented' },
+        { text: 'Visual impact on residential areas to the west requires assessment and landscape screening plan.', status: 'unknown' },
+      ],
+    },
+    communityBenefits: {
+      items: [
+        { text: 'JEA has described the site as a "once in a generation" economic development opportunity for Jacksonville\'s Northside.', status: 'documented' },
+        { text: 'Potential for construction employment, permanent operations jobs, and increased local tax revenue.', status: 'possible' },
+        { text: 'JEA\'s Gateway Commerce Center RFP process could include enforceable community benefit commitments.', status: 'possible' },
+        { text: 'Specific job counts, tax revenue projections, and community benefit terms have not been published.', status: 'unknown' },
+      ],
+    },
+    keyQuestionsBeforeApproval: [
+      'What is the environmental condition of the former coal plant footprint? Has a Phase I/II ESA been completed?',
+      'How much grid interconnection capacity remains after the 675 MW gas plant is built?',
+      'What specific traffic mitigation measures will be required for Heckscher Drive and New Berlin Road?',
+      'What enforceable community benefit commitments (local hiring, noise limits, visual screening) will be included in the RFP?',
+      'How will water supply for data center cooling be sourced — municipal, reclaimed, or groundwater — and at what volume?',
+      'What native landscaping and habitat restoration requirements will be imposed as conditions of development approval?',
+    ],
+  },
+
   tradeoffs: [
     {
       category: 'Brownfield remediation',
@@ -202,8 +270,9 @@ const desoto: CandidateSite = {
   classificationLabel: 'Active Data Center Proposal',
   county: 'DeSoto',
   city: 'Arcadia',
-  coordinates: { lat: 27.2181, lon: -81.8587 },
-  svgPosition: { x: 299, y: 224 },
+  coordinates: { lat: 27.223170, lon: -81.811582 },
+  coordinateSource: { label: 'DeSoto County Plant LLC public site listing, 3800 NE Roan Street', date: '2025' },
+  svgPosition: { x: 301.1, y: 223.2 },
   markerColor: '#f59e0b',
 
   formerUse: {
@@ -212,9 +281,9 @@ const desoto: CandidateSite = {
     source: { label: 'DeSoto County Plant LLC website; EIA records', date: '2025' },
   },
   currentStatus: {
-    value: 'Gas turbines removed. Site purchased by DeSoto County Plant LLC. DCIP Group received zoning approval for Phase 1 (34 acres) in March 2025 for an AI data center. Expansion applications filed for 825+ total acres. DeSoto County commissioners considered a temporary moratorium on data center applications due to scale of proposal. Phase 1 target: 80 MW Tier III campus with on-site natural gas reciprocating engines.',
+    value: 'Gas turbines removed. Site purchased by DeSoto County Industrial Park LLC (DCIP). Phase 1 approved March 24, 2026 (Ordinance 2026-004, application RZNE-0077-2025): PUD rezoning of 34.22 acres for a maximum 35,134 sq ft data center facility and office with supporting on-site gas electric generation. Two expansion rezonings are pending, not approved: RZNE-0086-2026 (274.26 ac) and RZNE-0087-2026 (553.79 ac plus generation), 828.05 acres total. A one-year countywide data-center application moratorium (Ordinance 2026-016, adopted July 28, 2026) exempts the approved project and both pending applications.',
     confidence: 'verified',
-    source: { label: 'DeSoto County planning records; Suncoast Searchlight investigative reporting', date: 'Mar–Jun 2025' },
+    source: { label: 'DeSoto County Ordinances 2026-004 & 2026-016; county Data Center Applications page', date: 'Mar–Jul 2026', url: 'https://desotobocc.com/431/Data-Center-Applications' },
   },
   ownership: {
     value: 'DeSoto County Plant LLC / DCIP Group',
@@ -222,9 +291,9 @@ const desoto: CandidateSite = {
     source: { label: 'DeSoto County property records; DCIP Group website', date: '2025' },
   },
   acreage: {
-    value: '34 acres initially rezoned. Expansion to 825+ acres proposed.',
+    value: '34.22 acres rezoned and approved (Phase 1). 828.05 additional acres under two pending expansion applications — pending Planning Commission and BOCC public hearings, not approved.',
     confidence: 'verified',
-    source: { label: 'DeSoto County planning records; Suncoast Searchlight', date: '2025' },
+    source: { label: 'DeSoto County Data Center Applications page', date: '2026', url: 'https://desotobocc.com/431/Data-Center-Applications' },
   },
   legacyCapacityMW: {
     value: '~340 MW (retired gas generation; turbines removed)',
@@ -259,55 +328,101 @@ const desoto: CandidateSite = {
     },
   ],
   keyUncertainties: [
-    'Whether the moratorium on data center applications was enacted by DeSoto County.',
-    'Whether Phase 1 construction has begun.',
-    'Whether DCIP\'s claimed 4 GW expansion capacity is technically feasible or aspirational marketing.',
-    'DCIP Group proposes islanded (off-grid) power generation — regulatory and environmental implications are unclear.',
-    'Community water-use concerns: 14% of site contains wetlands and surface waters per county planning documents.',
+    'Final codified condition text of Ordinance 2026-004 — the county posts minutes and a maps packet; whether Planning Commission conditions 14–15 (1,000-amp utility service cap; removal of "future" expansion geometry) were adopted requires verification.',
+    'Whether a Phase 1 improvement plan or construction has begun.',
+    'Whether the pending 828.05-acre expansion rezonings will be approved, and under what conditions — each requires Planning Commission and BOCC public hearings.',
+    'Cooling-water source and volume remain unpermitted; the board directed reclaimed-water feasibility findings at improvement-plan stage — exploration does not establish availability or use.',
+    'On-site generation is restricted to serving the project, and the county expressly disclaimed that it is permissible under the FPL franchise or state law — whether the islanded scheme can legally proceed is unresolved.',
+    'Air-quality permitting for on-site gas generation is not yet documented in the public record.',
   ],
   whyIncluded: 'The only Florida site with an active, publicly documented data center redevelopment proposal on a former power plant. Real-world case study demonstrating both the opportunity and the community-compatibility challenges of brownfield-first AI infrastructure.',
+
+  communityOverview: {
+    landHabitat: {
+      items: [
+        { text: 'Approved Phase 1 (34.22 acres) reuses the former gas plant site, avoiding new greenfield disturbance on that parcel.', status: 'documented' },
+        { text: 'Two pending applications (828.05 acres) extend well beyond the former plant into agricultural land — pending public hearings, not approved.', status: 'documented' },
+        { text: '~14% of the Phase 1 site contains wetlands and surface waters per the county Development Review Report; the site sits in the Rural/Agricultural future land use category and Conservation Overlay District.', status: 'documented' },
+        { text: 'Expansion-area wetlands were delineated by the applicant\'s consultant (SWCA, March 26, 2026) per the overall concept plan filed with the county.', status: 'documented' },
+        { text: 'Any jurisdictional wetland impact requires a state Environmental Resource Permit and potentially a USACE Section 404 permit; neither has been obtained.', status: 'unknown' },
+      ],
+    },
+    waterEnvironment: {
+      items: [
+        { text: 'The board directed DCIP to explore reclaimed-water feasibility — the City of Arcadia expressed interest in supplying it — and report findings at the improvement-plan stage. Exploration does not establish availability or use.', status: 'documented' },
+        { text: 'DeSoto County has limited water infrastructure for a facility of this scale; the moratorium ordinance lists water supply, reclaimed water, and wastewater capacity as unstudied countywide impacts.', status: 'documented' },
+        { text: 'DCIP has stated it would use reclaimed wastewater and wells for cooling rather than municipal supply — a developer commitment, not a permitted plan.', status: 'documented' },
+        { text: 'No SWFWMD water-use permit, permitted withdrawal volume, or cooling-water disposal plan is documented.', status: 'unknown' },
+      ],
+    },
+    neighborhoodProtection: {
+      items: [
+        { text: 'Adopted ordinance conditions per the March 24, 2026 minutes include a 55-dBA noise limit at 200 feet from all property lines and a photometric plan showing no light trespass — binding at improvement plan, but operational compliance is not yet demonstrated.', status: 'documented' },
+        { text: 'On-site generation is restricted to serving the project only — no sale, transmission, or wheeling of power to third parties; the county disclaimed any representation that it complies with the FPL franchise or state law (per the ordinance presented for adoption; final codified text requires verification).', status: 'documented' },
+        { text: 'Gas-fired generation and data-center cooling generate continuous noise and emissions; the adopted limit is a design requirement, not measured compliance.', status: 'documented' },
+        { text: 'Distance to nearest residences, ambient noise baseline, and final equipment inventory are not in the public record.', status: 'unknown' },
+      ],
+    },
+    communityBenefits: {
+      items: [
+        { text: 'DeSoto County has cited $30M+ in potential annual tax revenue — a county estimate, not a guaranteed outcome.', status: 'documented' },
+        { text: 'The applicant described ~25 full-time employees for Phase 1 at the March 24, 2026 hearing — few permanent jobs for the physical scale.', status: 'documented' },
+        { text: 'DeSoto County has significant budget challenges that the tax revenue could help address.', status: 'documented' },
+        { text: 'No binding community benefit agreement or enforceable hiring/infrastructure commitments are documented.', status: 'unknown' },
+      ],
+    },
+    keyQuestionsBeforeApproval: [
+      'Will the two pending expansion rezonings (828.05 acres) be approved, and will their conditions match or exceed Phase 1 protections?',
+      'What water source, permitted volume, and disposal plan will the improvement plan document — and did the reclaimed-water feasibility review yield usable supply?',
+      'Can the facility meet the adopted 55-dBA limit at 200 feet and zero light trespass with its actual equipment — demonstrated at improvement plan, not just promised?',
+      'What air-quality permits apply to the on-site generation, and what are projected emissions at approved and proposed scale?',
+      'Will wetland impacts require a state ERP or USACE Section 404 permit, and what avoidance is proposed across the expansion parcels?',
+      'Were Planning Commission conditions 14–15 (1,000-amp utility service cap; removal of "future" expansion geometry) adopted in the final Ordinance 2026-004 text?',
+      'What binding community benefit commitments (local hiring, infrastructure cost allocation, public reporting) will accompany any expansion approval?',
+    ],
+  },
 
   tradeoffs: [
     {
       category: 'Brownfield reuse vs. expansion',
-      potentialBenefit: 'Reusing a decommissioned gas plant site avoids new greenfield disturbance on the initial 34-acre footprint.',
-      potentialImpact: 'The 825+ acre expansion extends well beyond the original plant footprint into agricultural land, diminishing the brownfield-first advantage.',
-      investigationNeeded: 'Land-use history for parcels beyond the original plant boundary. Wetland delineation for the 14% of the site identified as wetlands/surface waters.',
+      potentialBenefit: 'Approved Phase 1 (34.22 acres) reuses the former gas plant site, avoiding new greenfield disturbance on that parcel.',
+      potentialImpact: 'Pending applications for 828.05 additional acres extend far beyond the plant into agricultural land — under review, not approved — diminishing the brownfield-first advantage.',
+      investigationNeeded: 'Land-use history for parcels beyond the plant boundary. Outcome and conditions of RZNE-0086-2026 and RZNE-0087-2026 hearings.',
       confidence: 'verified',
     },
     {
       category: 'Air quality & emissions',
       potentialBenefit: 'DCIP proposes closed-loop cooling, potentially reducing water discharge impacts compared to older once-through cooling systems.',
-      potentialImpact: 'On-site natural gas power generation (reciprocating engines, potentially scaling to turbines) will produce CO2, NOx, and other emissions. Suncoast Searchlight reported concerns that emissions could rival those of small nations at full scale.',
-      investigationNeeded: 'Air quality permit assessment. Greenhouse gas emissions modeling at proposed build-out phases.',
+      potentialImpact: 'On-site gas generation will produce CO2, NOx, and other emissions; reporting raised concerns about emissions scale at full build-out. The adopted ordinance restricts generation to serving the project but does not resolve air permitting.',
+      investigationNeeded: 'Air-quality permit assessment (FDEP/EPA). Greenhouse gas and criteria-pollutant modeling at approved and proposed phases.',
       confidence: 'verified',
     },
     {
       category: 'Water resources',
-      potentialBenefit: 'DCIP states they will use reclaimed wastewater and wells for cooling rather than municipal water supply.',
-      potentialImpact: 'DeSoto County has limited water infrastructure for a facility of this scale. Disposal of used cooling water is unresolved per county statements.',
-      investigationNeeded: 'Consumptive use permit from SWFWMD. Evaluation of reclaimed water capacity. Cooling water discharge plan.',
+      potentialBenefit: 'The board directed exploration of reclaimed water with the City of Arcadia, with findings due at the improvement-plan stage; DCIP describes closed-loop cooling.',
+      potentialImpact: 'DeSoto County has limited water infrastructure for a facility of this scale; the moratorium ordinance cites water supply, reclaimed water, and wastewater capacity as unstudied countywide impacts. Cooling-water source, volume, and disposal remain unpermitted.',
+      investigationNeeded: 'SWFWMD water-use permitting. Reclaimed-water feasibility findings at improvement-plan stage. Wastewater and discharge plan.',
       confidence: 'verified',
     },
     {
       category: 'Community economic impact',
-      potentialBenefit: 'County estimates $30M+ annual tax revenue. DCIP cites 25 jobs in Phase 1 with growth potential. DeSoto County has significant budget challenges that the project could help address.',
+      potentialBenefit: 'County-cited estimate of $30M+ potential annual tax revenue; the applicant described ~25 Phase 1 jobs. DeSoto County has significant budget challenges.',
       potentialImpact: 'Relatively few permanent jobs for a project of this physical scale. Community concerns about industrialization of a rural agricultural area.',
-      investigationNeeded: 'Independent economic impact assessment. Community benefit agreement terms.',
+      investigationNeeded: 'Independent economic impact assessment. Binding community benefit agreement terms.',
       confidence: 'verified',
     },
     {
       category: 'Noise',
-      potentialBenefit: 'DCIP has stated they will mitigate noise impacts.',
-      potentialImpact: 'Gas-fired reciprocating engines and data center cooling systems generate continuous noise. Nearest residential areas need assessment.',
-      investigationNeeded: 'Noise impact study with ambient baseline measurements. Distance to nearest residences.',
-      confidence: 'inferred',
+      potentialBenefit: 'Adopted conditions per the March 24, 2026 minutes cap noise at 55 dBA at 200 feet from all property lines — an enforceable design standard.',
+      potentialImpact: 'Gas-fired engines and cooling systems generate continuous noise; a limit on paper does not establish operational compliance. Nearest residences and ambient baseline are undocumented.',
+      investigationNeeded: 'Improvement-plan acoustic demonstration. Ambient baseline and distance to receptors. Post-opening monitoring requirements.',
+      confidence: 'verified',
     },
     {
       category: 'Habitat & wetlands',
-      potentialBenefit: 'Sensitive design around existing wetlands (14% of site) could preserve natural water features.',
-      potentialImpact: 'Expansion beyond the original plant footprint could impact wetlands and wildlife habitat in rural DeSoto County.',
-      investigationNeeded: 'NWI wetland delineation. USFWS consultation for listed species. Stormwater management plan.',
+      potentialBenefit: '~14% of the Phase 1 site is documented wetlands/surface waters in the county review, and the Conservation Overlay designation supports avoidance-based design.',
+      potentialImpact: 'Wetland impacts would require a state ERP and potentially a USACE Section 404 permit; the pending 828-acre expansion crosses rural agricultural land with delineated wetlands and surface waters.',
+      investigationNeeded: 'ERP/USACE permitting status. Expansion wetland delineation (SWCA, March 2026) and avoidance/minimization plan. Stormwater design at improvement plan.',
       confidence: 'verified',
     },
   ],
@@ -323,8 +438,9 @@ const indiantown: CandidateSite = {
   classificationLabel: 'Educational Case Study — Utility-Led Reuse',
   county: 'Martin',
   city: 'Indiantown',
-  coordinates: { lat: 27.0275, lon: -80.4786 },
-  svgPosition: { x: 368, y: 234 },
+  coordinates: { lat: 27.038889, lon: -80.5125 },
+  coordinateSource: { label: 'Florida DEP Conditions of Certification PA 90-31, 13303 SW Silver Fox Lane', date: '2019' },
+  svgPosition: { x: 366, y: 233.6 },
   markerColor: '#22c55e',
 
   formerUse: {
@@ -382,6 +498,46 @@ const indiantown: CandidateSite = {
   ],
   whyIncluded: 'Educational case study demonstrating a utility-led coal-to-solar transition on a brownfield site. Shows how the brownfield-first principle is already being applied in Florida by the site owner. Not presented as an available development opportunity.',
 
+  communityOverview: {
+    landHabitat: {
+      items: [
+        { text: 'FPL demolished the coal plant and is reusing the site for the Monarch Solar Energy Center — a direct brownfield-to-solar transition.', status: 'documented' },
+        { text: 'Portions of the former plant footprint not used for solar could potentially be restored to native Florida habitat.', status: 'possible' },
+        { text: 'If FPL pursues maximum solar build-out on available land, habitat restoration opportunities may be limited.', status: 'possible' },
+        { text: 'Site-specific ecological assessment of cleared land and NWI wetland status have not been published.', status: 'unknown' },
+      ],
+    },
+    waterEnvironment: {
+      items: [
+        { text: 'Solar energy centers do not require cooling water, eliminating one of coal generation\'s largest environmental impacts.', status: 'documented' },
+        { text: 'Coal combustion residual contamination status for the former plant footprint is unknown from public records.', status: 'unknown' },
+        { text: 'FL DEP cleanup records and CCR Rule compliance for the former coal facility should be evaluated.', status: 'unknown' },
+      ],
+    },
+    neighborhoodProtection: {
+      items: [
+        { text: 'Solar energy centers produce no combustion noise, emissions, or truck traffic — significant improvement over the former coal operations.', status: 'documented' },
+        { text: 'Visual character of the area changes from industrial power plant to low-profile solar arrays.', status: 'documented' },
+        { text: 'Adjacent to the active FPL Martin Power Plant (2,150 MW gas combined-cycle), which remains an industrial neighbor.', status: 'documented' },
+      ],
+    },
+    communityBenefits: {
+      items: [
+        { text: 'Solar energy center generates property tax revenue for Martin County.', status: 'documented' },
+        { text: 'FPL press materials describe Martin County as a "great success story" for coal-to-solar transition.', status: 'documented' },
+        { text: 'Solar facilities create fewer permanent local jobs than the former coal plant operations did.', status: 'documented' },
+        { text: 'Comparison of local tax revenue and employment before (coal) and after (solar) has not been independently published.', status: 'unknown' },
+      ],
+    },
+    keyQuestionsBeforeApproval: [
+      'What is the contamination status of the former coal plant footprint? Have coal combustion residuals been fully remediated?',
+      'How much additional solar or clean energy capacity could be sited on the remaining former plant acreage?',
+      'What is the net change in local tax revenue and employment from the coal-to-solar transition?',
+      'Are there opportunities for native habitat restoration on portions of the site not needed for solar arrays?',
+      'What long-term groundwater monitoring, if any, is required for the former coal plant area?',
+    ],
+  },
+
   tradeoffs: [
     {
       category: 'Coal-to-solar transition',
@@ -424,8 +580,9 @@ const escambia: CandidateSite = {
   classificationLabel: 'Potential Redevelopment Opportunity',
   county: 'Escambia',
   city: 'Pensacola',
-  coordinates: { lat: 30.4550, lon: -87.2125 },
-  svgPosition: { x: 31, y: 41 },
+  coordinates: { lat: 30.4553, lon: -87.2317 },
+  coordinateSource: { label: 'EPA NPL location data, 3910 North Palafox Street', date: '2008' },
+  svgPosition: { x: 30.1, y: 40.8 },
   markerColor: '#8b5cf6',
 
   formerUse: {
@@ -434,12 +591,12 @@ const escambia: CandidateSite = {
     source: { label: 'EPA Superfund Site Profile; NPL listing 1994', url: 'https://www.epa.gov/superfund-redevelopment/superfund-sites-reuse-florida', date: '2024' },
   },
   currentStatus: {
-    value: 'EPA Superfund site. Soil cleanup completed 2010. EPA issued Ready for Reuse Determination in 2013 for commercial and industrial use. 70 acres transferred to Escambia County in 2018 for Mid-Town Commerce Park development. Groundwater cleanup (OU-2) funded by Infrastructure Investment and Jobs Act ($40M, 2021). Land use restricted by recorded restrictive covenants to commercial/industrial/manufacturing only.',
+    value: 'EPA Superfund site with two operable units. OU-1 (soil): major cleanup complete by 2010; contaminated soil consolidated in a capped containment cell; restrictive covenants recorded April 2013; FDEP assumed most O&M March 2013; EPA issued a Ready for Reuse Determination December 3, 2018 for commercial/industrial use, subject to recorded restrictions. 50 acres of former residential parcels were deleted from the NPL in September 2019; the remaining OU-1 areas and all of OU-2 remain on the NPL. OU-2 (groundwater): active remediation began late 2023 under the 2015 Amended ROD using ~$40M in Bipartisan Infrastructure Law funds — SWMU-10 source-area work platform built 2023, baseline sampling 2024, thermal extraction and in-situ treatment to follow. The 2022 Five-Year Review found OU-1 short-term protective, with long-term protectiveness conditional on monitoring updates and recording restrictive covenants on the former facility area.',
     confidence: 'verified',
-    source: { label: 'EPA Region 4 Annual Report 2018; EPA Ready for Reuse Determination 2013; EPA OIG Report', date: '2013–2024' },
+    source: { label: 'EPA site profile; RfR Determination (Dec 2018); Fifth Five-Year Review (Sep 2022); EPA OU-2 updates', date: '2018–2024', url: 'https://cumulis.epa.gov/supercpad/SiteProfiles/index.cfm?fuseaction=second.cleanup&id=0400573' },
   },
   ownership: {
-    value: '~70 acres: Escambia County. ~15 acres: City of Pensacola. ~15 acres: EPA (OU-2 groundwater treatment area).',
+    value: '~70 acres: Escambia County (transferred 2018). ~15 acres: City of Pensacola. ~15 acres: EPA (OU-2 groundwater treatment area). County reported in 2026 that it is pursuing adjacent privately owned parcels.',
     confidence: 'verified',
     source: { label: 'EPA Five-Year Review; EPA Region 4 records', date: '2022' },
   },
@@ -480,34 +637,85 @@ const escambia: CandidateSite = {
     },
   ],
   keyUncertainties: [
-    'Whether groundwater cleanup (OU-2) is complete or still active. IIJA funding was allocated in 2021.',
+    'OU-2 groundwater remediation is active and in an early phase — source control at SWMU-10, baseline sampling, and contracting for thermal extraction and in-situ treatment; no completion schedule is established.',
+    'Whether restrictive covenants have been recorded for the former facility parcels — the 2022 Five-Year Review required this for long-term protectiveness with a September 2025 milestone; recording is not confirmed in the public records reviewed.',
     'Whether any parcels have been sold or developed since the 2018 transfer to Escambia County.',
     'The site has no legacy power-generation interconnection — electrical capacity for a data center would need to be established from utility service lines.',
-    'EPA OIG report (2024) noted insufficient engineering controls and poorly enforced institutional controls at the site.',
-    'Restrictive covenants prohibit residential use, recreation, mining, and agriculture. Groundwater use is prohibited.',
+    'EPA OIG report 24-E-0046 (June 2024) found deteriorated fencing/signage and unenforced institutional controls: Recommendations 1 and 3 were unresolved at issuance and Recommendations 2 and 4 were resolved with corrective actions pending. Closure of the unresolved items is not confirmed in the public records reviewed.',
+    'January 2026 county redevelopment discussions (fire training, transit facility, animal shelter, possible housing after new soil testing) are committee-level direction reported in local media — not adopted plans, and any residential use would require formally amending EPA/FDEP institutional controls.',
+    'Recorded covenant scope varies by parcel: the strictest construction limits (no deep foundations, no infiltration ponds, FDEP plan review) apply within the containment-cell footprint, not identically across the whole site.',
   ],
   whyIncluded: 'The only non-power-plant site in the shortlist. Demonstrates the full brownfield lifecycle: contamination, 400+ household relocation, EPA Superfund cleanup, Ready for Reuse certification, and county-led redevelopment planning. Tests the Environmental Restoration & Community Compatibility framework with a site where remediation and community displacement are documented realities.',
+
+  communityOverview: {
+    landHabitat: {
+      items: [
+        { text: 'Redevelopment of a contaminated, vacant industrial site avoids any new greenfield disturbance.', status: 'documented' },
+        { text: 'EPA soil cleanup (OU-1) completed 2010. Ready for Reuse Determination issued December 3, 2018 for commercial/industrial use — an environmental status report, not a development approval for any specific use.', status: 'documented' },
+        { text: '50 acres of former residential parcels were deleted from the NPL in September 2019; the remaining OU-1 areas and all of OU-2 remain on the NPL.', status: 'documented' },
+        { text: 'Native Florida landscaping could transform a blighted site into an attractive commerce park, improving the neighborhood aesthetic.', status: 'possible' },
+        { text: 'Landscaping must respect recorded restrictions — deep-rooted vegetation is prohibited within the containment-cell footprint, and surface cover must protect the remedy.', status: 'documented' },
+      ],
+    },
+    waterEnvironment: {
+      items: [
+        { text: 'OU-2 groundwater remediation (creosote, PCP, dioxins) is active: work began late 2023 with ~$40M in BIL funds; SWMU-10 source-area platform and baseline sampling done; thermal extraction and in-situ treatment to follow. No completion schedule is established.', status: 'documented' },
+        { text: 'A capped containment cell on OU-1 requires ongoing surface protection; construction within its footprint requires FDEP plan review.', status: 'documented' },
+        { text: '33+ groundwater monitoring wells on-site must remain accessible and undisturbed.', status: 'documented' },
+        { text: 'Groundwater use is prohibited within the restricted parcels, and the site lies in a NWFWMD groundwater delineation area requiring district approval for any wells.', status: 'documented' },
+        { text: 'No stormwater infiltration structures or ponds are permitted within the containment-cell footprint; new or altered stormwater systems require prior FDEP approval.', status: 'documented' },
+      ],
+    },
+    neighborhoodProtection: {
+      items: [
+        { text: 'Population within 1 mile: 8,188 — this is an urban location requiring careful attention to neighborhood impacts.', status: 'documented' },
+        { text: '400+ households in Rosewood Terrace, Oak Park, Escambia Arms, Goulding, and Clarinda Triangle were permanently relocated (1997–2008) in one of the largest residential relocations under Superfund. Residents documented health impacts and financial losses; community voices such as Citizens Against Toxic Exposure remain engaged.', status: 'documented' },
+        { text: 'Site-wide recorded covenants (April 2013) restrict use to commercial/industrial/manufacturing and prohibit housing, day care, schools, recreation, mining, and agriculture; the strictest construction limits apply only within the containment-cell footprint. Covenants for the former facility parcels were not yet recorded as of the 2022 FYR.', status: 'documented' },
+        { text: 'The 2022 FYR found OU-1 short-term protective; long-term protectiveness requires completing monitoring updates, recording former-facility covenants, and preventing unauthorized uses.', status: 'documented' },
+        { text: 'EPA OIG report 24-E-0046 (June 2024) found deteriorated fencing, missing signage, and unenforced institutional controls with ongoing encampments; Recommendations 1 and 3 remained unresolved at issuance.', status: 'documented' },
+      ],
+    },
+    communityBenefits: {
+      items: [
+        { text: 'EPA estimated full buildout of Mid-Town Commerce Park could support 1,700+ jobs and $132M annual employee income.', status: 'documented' },
+        { text: 'County estimated $4.4M in annual local tax revenue at full buildout.', status: 'documented' },
+        { text: 'Redevelopment could restore economic vitality to a neighborhood that lost 400+ households to displacement.', status: 'possible' },
+        { text: 'January 2026 county committee discussions (fire training, transit facility, animal shelter, marketable parcels, possible housing pending new soil testing) are reported direction — not adopted plans.', status: 'possible' },
+        { text: 'Environmental justice screening (EJScreen), meaningful engagement of displaced residents, and a community benefit agreement are appropriate given the site history.', status: 'possible' },
+        { text: 'Whether any parcels have been sold or developed since the 2018 transfer is unconfirmed; no specific facility has been approved.', status: 'unknown' },
+      ],
+    },
+    keyQuestionsBeforeApproval: [
+      'What is the OU-2 remediation schedule, and how will active groundwater treatment areas be protected during any development?',
+      'How will construction be coordinated with the containment cell, 33+ monitoring wells, and FDEP plan-review requirements inside the cell footprint?',
+      'Have restrictive covenants been recorded for the former facility parcels, as the 2022 FYR required for long-term protectiveness?',
+      'Have the unresolved EPA OIG recommendations (institutional-control enforcement, physical access controls) been addressed since June 2024?',
+      'How will the county\'s new soil testing and any proposed institutional-control changes be conducted transparently with EPA/FDEP and the community?',
+      'What engagement has been conducted with displaced residents and current neighbors, and what enforceable community benefits (local hiring, neighborhood investment) would accompany reuse?',
+      'Unlike retired power plant sites, there is no legacy high-voltage interconnection — what is the utility capacity of the Pensacola distribution network?',
+    ],
+  },
 
   tradeoffs: [
     {
       category: 'Brownfield remediation & restoration',
-      potentialBenefit: 'Soil cleanup is complete (2010). Redevelopment under the Mid-Town Commerce Park plan would bring economic activity to a site that has been contaminated and vacant for decades. EPA estimated full buildout could support 1,700+ jobs and $132M annual income.',
-      potentialImpact: 'Groundwater contamination (creosote, PCP, dioxins) remains under active remediation. A containment cell on OU-1 requires ongoing surface protection. Construction activity must be compatible with the remedy.',
-      investigationNeeded: 'Status of OU-2 groundwater cleanup. Compliance with EPA restrictive covenants. Evaluation of containment cell integrity and buffer zones.',
+      potentialBenefit: 'Soil cleanup is complete (2010) and capped. Redevelopment consistent with the December 2018 Ready for Reuse determination could bring economic activity to a site vacant for decades; EPA estimated full buildout could support 1,700+ jobs and $132M annual income.',
+      potentialImpact: 'OU-2 groundwater remediation is active (began late 2023, no completion schedule). The OU-1 containment cell requires ongoing protection, and the 2022 FYR rated the remedy only short-term protective pending monitoring updates and former-facility covenants.',
+      investigationNeeded: 'OU-2 remediation schedule and protectiveness review. Whether former-facility restrictive covenants have been recorded. FDEP plan-review requirements within the cell footprint.',
       confidence: 'verified',
     },
     {
       category: 'Community justice & displacement',
       potentialBenefit: 'Redevelopment of the site as a commerce park could begin to restore economic vitality to a neighborhood that lost 400+ households to contamination-related relocation.',
-      potentialImpact: 'The surrounding community experienced decades of contamination exposure and displacement. Redevelopment must be sensitive to this history and provide tangible community benefits.',
-      investigationNeeded: 'Community engagement with residents and former residents. Environmental justice screening (EJScreen). Community benefit agreement appropriate to the site\'s history.',
+      potentialImpact: 'The surrounding community experienced decades of contamination exposure, displacement, health impacts, and home-value loss. Redevelopment must acknowledge this history and provide tangible community benefits.',
+      investigationNeeded: 'Community engagement with displaced residents and current neighbors. Environmental justice screening (EJScreen). Community benefit agreement appropriate to the site\'s history. Outcome of the county\'s 2026 soil-testing and institutional-control discussions.',
       confidence: 'verified',
     },
     {
       category: 'Stormwater & groundwater protection',
-      potentialBenefit: 'Modern stormwater systems required for any new development would improve surface water management. Impervious surfaces over remediated soil can serve as an additional protective layer.',
-      potentialImpact: 'Construction must not damage the containment cell or interfere with groundwater monitoring wells (33+ wells on site).',
-      investigationNeeded: 'Site-specific engineering review for compatibility with EPA remedy. NWFWMD stormwater permit requirements.',
+      potentialBenefit: 'Lined stormwater conveyance consistent with the recorded restrictions would manage runoff without infiltration into the containment cell.',
+      potentialImpact: 'Infiltration ponds and unlined ditches are prohibited within the cell footprint; construction must not damage the cell, monitoring wells, or remedy systems.',
+      investigationNeeded: 'FDEP-approved stormwater design within the cell footprint. NWFWMD stormwater permit requirements. Compatibility with active OU-2 treatment systems.',
       confidence: 'verified',
     },
     {

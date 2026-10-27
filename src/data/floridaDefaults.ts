@@ -106,9 +106,10 @@ export const fplGenerationDefaults: ScenarioConfig = {
 };
 
 /**
- * Backward-compatible default export for existing imports.
+ * App default: fresh visits load the public FPL portfolio preset.
+ * The legacy illustrative preset remains selectable in the scenario picker.
  */
-export const floridaDefaults: ScenarioConfig = legacyDemoDefaults;
+export const floridaDefaults: ScenarioConfig = fplGenerationDefaults;
 
 /**
  * Named preset collection for the UI scenario picker.
