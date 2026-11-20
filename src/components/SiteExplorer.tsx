@@ -35,6 +35,7 @@ import {
   type CommunityImpactProfile,
 } from '../data/communityImpactData';
 import { getFacilityVisionProfile } from '../data/facilityVisionData';
+import { ProjectNewsUpdates } from './ProjectNewsUpdates';
 
 const SiteSatelliteView = lazy(() => import('./StJohnsSatelliteView'));
 const ResponsibleFacilityVision = lazy(() => import('./ResponsibleFacilityVision'));
@@ -414,6 +415,8 @@ function SiteDetail({
           <div><ConfidenceBadge level="illustrative" /> Estimate based on published benchmarks, not site-specific.</div>
         </div>
       </div>
+
+      <ProjectNewsUpdates projectId={site.id} />
     </div>
   );
 }

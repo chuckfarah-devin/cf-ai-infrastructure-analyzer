@@ -7,10 +7,14 @@ import {
 } from './projectNewsQueries';
 
 describe('projectNewsQueries', () => {
-  it('defines a query for each launch project', () => {
-    for (const id of ['project-tango', 'fort-meade', 'iron-mountain-mia1']) {
+  it('defines a query for each launch project and brownfield site', () => {
+    for (const id of [
+      'project-tango', 'fort-meade', 'iron-mountain-mia1',
+      'st-johns', 'desoto', 'indiantown', 'escambia',
+    ]) {
       expect(PROJECT_NEWS_QUERIES[id]).toBeDefined();
       expect(PROJECT_NEWS_QUERIES[id].query.length).toBeGreaterThan(0);
+      expect(PROJECT_NEWS_QUERIES[id].googleNewsQuery.length).toBeGreaterThan(0);
     }
   });
 

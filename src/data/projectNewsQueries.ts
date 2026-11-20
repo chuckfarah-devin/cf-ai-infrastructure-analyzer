@@ -61,6 +61,34 @@ export const PROJECT_NEWS_QUERIES: Record<string, NewsQuery> = {
     description: 'coverage mentioning Iron Mountain, Miami, and a data center',
     googleNewsQuery: '"Iron Mountain" Miami "data center"',
   },
+  // Brownfield & Reuse profiles — queries use site-specific names/aliases with
+  // location qualifiers to avoid colliding with unrelated facilities.
+  'st-johns': {
+    projectId: 'st-johns',
+    query: '"St. Johns River Power Park"',
+    description: 'coverage mentioning St. Johns River Power Park in Jacksonville',
+    googleNewsQuery: '"St. Johns River Power Park"',
+  },
+  'desoto': {
+    projectId: 'desoto',
+    query: '"DeSoto County" "data center" Arcadia',
+    description: 'coverage mentioning a DeSoto County data center near Arcadia',
+    // Arcadia qualifier distinguishes this Florida site from DeSoto County, MS/TX proposals.
+    googleNewsQuery: '"DeSoto County" "data center" Arcadia',
+  },
+  'indiantown': {
+    projectId: 'indiantown',
+    query: '"Indiantown" "cogeneration"',
+    description: 'coverage mentioning the Indiantown site or its former cogeneration plant',
+    // OR covers redevelopment ("data center") and legacy-plant ("cogeneration") coverage.
+    googleNewsQuery: '"Indiantown" ("data center" OR "cogeneration")',
+  },
+  'escambia': {
+    projectId: 'escambia',
+    query: '"Mid-Town Commerce Park" Pensacola',
+    description: 'coverage mentioning Mid-Town Commerce Park or Escambia Wood Treating in Pensacola',
+    googleNewsQuery: '"Mid-Town Commerce Park" Pensacola OR "Escambia Wood Treating"',
+  },
 };
 
 /** External Google News search URL — always available, no fetch required. */
