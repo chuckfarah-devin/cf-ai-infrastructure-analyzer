@@ -159,15 +159,15 @@ const projectTango: FloridaProject = {
   coordinates: { lat: 26.6916, lon: -80.3696 },
   coordinateNote:
     'Marker at the centroid of the nine parcel control numbers recorded in the county\'s Project Tango record (PCNs in Sections 29 and 32, T43S R40E), each located in the Palm Beach County parcel GIS (pbcmaps.pbcgov.org). Combined footprint roughly 26.6855–26.6976°N, −80.3735 to −80.3658°W, north of Southern Boulevard beside the L-8 Canal. Marker is the parcel centroid, not a boundary display.',
-  classificationLabel: 'Partially Approved — Administrative Approval Within Master Plan',
+  classificationLabel: 'Partially Approved — Administrative Approval Within Master Plan; Expansion Under Legal Challenge',
   markerColor: '#f59e0b',
 
   overview:
-    'A data-center conversion inside the already-approved Central Park Commerce Center master plan, on a site with existing industrial use documented in a Phase I environmental site assessment (asphalt plant, concrete batch plants, FPL equipment laydown). County commissioners denied a major expansion in July 2026, but zoning staff administratively approved ~698,000 sq ft of data-center space in October 2026 using capacity already inside the existing approval — a case study in how approvals persist inside earlier entitlements.',
+    'A data-center conversion inside the already-approved Central Park Commerce Center master plan, on a site with existing industrial use documented in a Phase I environmental site assessment (asphalt plant, concrete batch plants, FPL equipment laydown). County commissioners denied a major expansion in July 2026, but zoning staff administratively approved ~698,000 sq ft of data-center space in October 2026 using capacity already inside the existing approval — a case study in how approvals persist inside earlier entitlements. The developer has since sued the county over the appeal process for the denied expansion.',
   status:
-    'Data-center space administratively approved Oct 7, 2026 (~698,000 sq ft within the existing master plan); larger expansion denied by commissioners Jul 15, 2026; county-wide moratorium on new ≥50 MW data-center applications adopted separately.',
+    'Data-center space administratively approved Oct 7, 2026 (~698,000 sq ft within the existing master plan); larger expansion denied by commissioners Jul 15, 2026 and is now under legal challenge (PBA Holdings lawsuit over the county appeal process; pretrial hearing Dec 30, 2026); county-wide moratorium on new ≥50 MW data-center applications adopted separately.',
   statusConfidence: 'verified',
-  statusSource: { label: 'PBC Zoning Division application record ABN/DRO-2026-01058; WPBF/WFLX reporting', date: 'Oct 2026' },
+  statusSource: { label: 'PBC Zoning Division application record ABN/DRO-2026-01058; WPBF/WFLX reporting; CBS12 litigation coverage', date: 'county record verified Oct 26, 2026; news updated Nov 20, 2026' },
 
   capacities: [
     {
@@ -183,9 +183,13 @@ const projectTango: FloridaProject = {
     { date: 'Jul 15, 2026', event: 'Commissioners deny expanded plan (5-1)', evidence: 'agency-record', source: { label: 'WFLX / PBC record', url: 'https://www.wflx.com/2026/10/21/palm-beach-county-said-no-project-tango-expansion-data-center-space-still-triples/', date: 'Oct 21, 2026' } },
     { date: 'Oct 7, 2026', event: 'Staff administratively approve ~698,000 sq ft data-center space within existing approval — no public hearing; includes 850-ft buffer from Arden, sound studies, noise monitoring, closed-loop cooling', evidence: 'agency-record', source: { label: 'WPBF', url: 'https://www.wpbf.com/article/palm-beach-county-zoning-data-center-project-tango/74209499', date: 'Oct 2026' } },
     { date: 'Oct 2026', event: 'County adopts one-year moratorium on new ≥50 MW data-center applications (does not undo existing approvals)', evidence: 'news-report', source: { label: 'CBS12', url: 'https://cbs12.com/news/local/palm-beach-county-pauses-large-ai-data-centers-one-year-moratorium-smaller-project-tango-plan-remains-approved', date: 'Oct 2026' } },
+    { date: 'Nov 2026', event: 'PBA Holdings sues the county, alleging the required appeal process was not followed after the expansion denial; county officials dispute that position; pretrial hearing scheduled Dec 30, 2026', evidence: 'news-report', source: { label: 'CBS12', url: 'https://cbs12.com/news/local/project-tango-heads-to-court-palm-beach-county-developer-pba-holdings-company-lawsuit-larger-version-denied-controversial-ai-data-center-moratorium-florida-news', date: 'Nov 20, 2026' } },
+    { date: 'Nov 2026', event: 'Commissioners vote to create a data-center advisory committee and approve negotiations to hire an outside consultant', evidence: 'news-report', source: { label: 'CBS12', url: 'https://cbs12.com/news/local/project-tango-heads-to-court-palm-beach-county-developer-pba-holdings-company-lawsuit-larger-version-denied-controversial-ai-data-center-moratorium-florida-news', date: 'Nov 20, 2026' } },
   ],
   unresolved: [
     'Electrical demand of the currently approved plan — no MW figure in county records',
+    'Whether the lawsuit affects the rejected expansion or the county\'s appeal process — and whether it reaches the already-approved smaller plan',
+    'Whether the advisory committee and outside consultant influence future data-center reviews',
     'Whether WPB Logistics Owner proceeds with a separate warehouse-to-data-center conversion',
     'How the county moratorium interacts with future phases',
     'End user/operator identity',
@@ -196,6 +200,7 @@ const projectTango: FloridaProject = {
     { label: 'PBC — Phase I Environmental Site Assessment (existing industrial use)', url: 'https://discover.pbc.gov/pzb/zoning/Hearings-Meetings-BCC/F-21_Phase%201%20Environmental%20Site%20Assessment_6-8-2026.pdf', date: 'Jun 2026' },
     { label: 'WPBF — Oct 7 administrative approval', url: 'https://www.wpbf.com/article/palm-beach-county-zoning-data-center-project-tango/74209499', date: 'Oct 2026' },
     { label: 'CBS12 — county moratorium', url: 'https://cbs12.com/news/local/palm-beach-county-pauses-large-ai-data-centers-one-year-moratorium-smaller-project-tango-plan-remains-approved', date: 'Oct 2026' },
+    { label: 'CBS12 — expansion dispute heads to court (reviewed Nov 20, 2026)', url: 'https://cbs12.com/news/local/project-tango-heads-to-court-palm-beach-county-developer-pba-holdings-company-lawsuit-larger-version-denied-controversial-ai-data-center-moratorium-florida-news', date: 'Nov 20, 2026' },
   ],
   whyIncluded:
     'Shows how data-center capacity can be approved administratively inside earlier entitlements — and how community protection conditions (buffers, sound studies, closed-loop cooling) get attached to approvals.',
