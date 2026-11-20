@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { FLORIDA_PROJECTS, type FloridaProject, type CapacityFigure, VERIFICATION_DATE } from '../data/floridaProjectsData';
 import { ConfidenceBadge } from './SiteExplorer';
+import { ProjectNewsUpdates } from './ProjectNewsUpdates';
 import type { SatelliteSite } from './StJohnsSatelliteView';
 
 const SiteSatelliteView = lazy(() => import('./StJohnsSatelliteView'));
@@ -185,6 +186,8 @@ function ProjectDetail({ project, onOpenSatellite, onOpenAreaView }: { project: 
         </ul>
         <p className="project-verify-date">Records verified {VERIFICATION_DATE}.</p>
       </div>
+
+      <ProjectNewsUpdates projectId={project.id} />
     </div>
   );
 }

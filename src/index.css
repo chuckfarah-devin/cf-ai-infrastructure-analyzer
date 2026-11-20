@@ -115,6 +115,7 @@ code {
   background: rgba(255, 255, 255, 0.22);
 }
 
+
 /* ── Layout ───────────────────────────────────────────────── */
 
 .app-content {
@@ -2892,3 +2893,87 @@ code {
   .florida-projects .site-comparison-list { flex: none; width: 100%; }
   .projects-overview-map { height: 340px; }
 }
+
+/* ── Check for Updates (live, unverified news) ────────────── */
+.project-news-section {
+  border-top: 1px dashed #cbd5e1;
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+}
+
+.project-news-note {
+  font-size: 0.78rem;
+  color: #64748b;
+  margin: 0 0 0.5rem;
+}
+
+.news-check-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.8rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #1d4ed8;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.news-check-btn:hover { background: #dbeafe; }
+
+.news-check-again { margin-top: 0.5rem; font-weight: 500; }
+
+.news-status {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  color: #475569;
+  margin: 0.25rem 0;
+}
+
+.news-error { color: #b45309; }
+
+.news-results {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.news-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.45rem 0.6rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-left: 3px solid #f59e0b;
+  border-radius: 4px;
+}
+
+.news-badge-unverified {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #92400e;
+}
+
+.news-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #1e3a8a;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.news-title:hover { text-decoration: underline; }
+
+.news-meta { font-size: 0.72rem; color: #64748b; }
