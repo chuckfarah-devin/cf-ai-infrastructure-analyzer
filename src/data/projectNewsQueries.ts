@@ -107,6 +107,8 @@ export function parseGdeltResponse(payload: unknown, searchedAt: Date): NewsQuer
       article: {
         url: a.url,
         title: a.title.trim(),
+        // seendate is when GDELT first indexed the article — not the
+        // publisher's publication date — and is labeled as such in the UI.
         date: parsed
           ? parsed.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
           : 'Date unknown',

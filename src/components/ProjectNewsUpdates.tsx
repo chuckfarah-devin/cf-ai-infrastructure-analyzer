@@ -6,7 +6,7 @@
  * project record. Nothing fetched here modifies project data.
  */
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Newspaper, ExternalLink, AlertTriangle, LoaderCircle } from 'lucide-react';
 import {
   fetchProjectNews,
@@ -24,17 +24,30 @@ type FetchState =
 
 const RETRYABLE: NewsServiceError['kind'][] = ['rate-limited', 'timeout', 'network', 'http'];
 
+// Module-level cooldown: GDELT rate-limits per IP (~1 request per 5s), so the
+// guard must survive project switches and component remounts.
+let lastFetchAt = 0;
+
 export function ProjectNewsUpdates({ projectId }: { projectId: string }) {
   const query = PROJECT_NEWS_QUERIES[projectId];
   const [state, setState] = useState<FetchState>({ status: 'idle' });
   const abortRef = useRef<AbortController | null>(null);
-  const cooldownRef = useRef<number>(0);
+
+  // Switching projects: cancel any in-flight request and drop stale results
+  // so a previous project's headlines never appear under a new profile.
+  useEffect(() => {
+    abortRef.current?.abort();
+    abortRef.current = null;
+    setState({ status: 'idle' });
+  }, [projectId]);
+
+  useEffect(() => () => abortRef.current?.abort(), []);
 
   if (!query) return null;
 
   const checkForUpdates = async () => {
     if (state.status === 'loading') return;
-    if (Date.now() - cooldownRef.current < 5000) {
+    if (Date.now() - lastFetchAt < 5000) {
       setState({
         status: 'error',
         message: 'Please wait a few seconds between searches — the public news service limits request frequency.',
@@ -42,20 +55,28 @@ export function ProjectNewsUpdates({ projectId }: { projectId: string }) {
       });
       return;
     }
-    cooldownRef.current = Date.now();
+    lastFetchAt = Date.now();
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
-    const timeout = window.setTimeout(() => controller.abort(), 15000);
+    const timeout = window.setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, 15000);
     setState({ status: 'loading' });
+    let timedOut = false;
     try {
       const result = await fetchProjectNews(query, controller.signal);
+      if (controller !== abortRef.current) return; // superseded by a newer request
       setState(
         result.articles.length === 0
           ? { status: 'empty', searchedAt: result.searchedAt }
           : { status: 'results', articles: result.articles, searchedAt: result.searchedAt },
       );
     } catch (error) {
+      if (controller !== abortRef.current || (error instanceof DOMException && error.name === 'AbortError' && !timedOut)) {
+        return; // deliberately aborted by a project switch or unmount — ignore
+      }
       if (error instanceof DOMException && error.name === 'AbortError') {
         setState({
           status: 'error',
@@ -86,6 +107,7 @@ export function ProjectNewsUpdates({ projectId }: { projectId: string }) {
       <h4><Newspaper size={15} /> Check for Updates</h4>
       <p className="project-news-note">
         Live headline search for {query.description}, via the free GDELT public news index.
+        Dates shown are when GDELT first indexed each article, not publisher dates.
         Results are <strong>unverified — not yet reviewed</strong> and do not change the curated record above.
       </p>
 
@@ -117,7 +139,7 @@ export function ProjectNewsUpdates({ projectId }: { projectId: string }) {
                 <a href={a.url} target="_blank" rel="noopener noreferrer" className="news-title">
                   {a.title} <ExternalLink size={10} />
                 </a>
-                <span className="news-meta">{a.outlet} · {a.date}</span>
+                <span className="news-meta">{a.outlet} · indexed {a.date}</span>
               </li>
             ))}
           </ul>
