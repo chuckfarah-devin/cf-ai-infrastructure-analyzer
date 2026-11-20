@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   buildNewsQueryUrl,
+  googleNewsSearchUrl,
   parseGdeltResponse,
   PROJECT_NEWS_QUERIES,
 } from './projectNewsQueries';
@@ -20,6 +21,18 @@ describe('projectNewsQueries', () => {
     expect(url).toContain('format=json');
     const params = new URLSearchParams(url.split('?')[1]);
     expect(params.get('query')).toBe('"Project Tango" "Palm Beach"');
+  });
+
+  it('builds a correctly encoded Google News search URL per project', () => {
+    const url = googleNewsSearchUrl(PROJECT_NEWS_QUERIES['project-tango']);
+    expect(url).toContain('https://news.google.com/search?');
+    const params = new URLSearchParams(url.split('?')[1]);
+    expect(params.get('q')).toBe('"Project Tango" "Palm Beach" data center');
+    expect(params.get('hl')).toBe('en-US');
+    // disambiguation terms present where configured
+    expect(
+      new URLSearchParams(googleNewsSearchUrl(PROJECT_NEWS_QUERIES['fort-meade']).split('?')[1]).get('q'),
+    ).toContain('Florida');
   });
 
   it('parses GDELT articles with dates and outlets', () => {

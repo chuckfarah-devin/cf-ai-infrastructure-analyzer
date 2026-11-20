@@ -16,6 +16,8 @@ export interface NewsQuery {
   query: string;
   /** Human-readable description of what the query targets, shown in the UI. */
   description: string;
+  /** Google News search terms for the external "Search latest coverage" link. */
+  googleNewsQuery: string;
 }
 
 export interface NewsArticle {
@@ -44,18 +46,33 @@ export const PROJECT_NEWS_QUERIES: Record<string, NewsQuery> = {
     projectId: 'project-tango',
     query: '"Project Tango" "Palm Beach"',
     description: 'coverage mentioning Project Tango / Central Park Commerce Center and Palm Beach County',
+    googleNewsQuery: '"Project Tango" "Palm Beach" data center',
   },
   'fort-meade': {
     projectId: 'fort-meade',
     query: '"Fort Meade" "data center"',
     description: 'coverage mentioning Fort Meade and a data center',
+    // "Florida" disambiguates from Fort Meade, Maryland.
+    googleNewsQuery: '"Fort Meade" Florida "data center"',
   },
   'iron-mountain-mia1': {
     projectId: 'iron-mountain-mia1',
     query: '"Iron Mountain" Miami "data center"',
     description: 'coverage mentioning Iron Mountain, Miami, and a data center',
+    googleNewsQuery: '"Iron Mountain" Miami "data center"',
   },
 };
+
+/** External Google News search URL — always available, no fetch required. */
+export function googleNewsSearchUrl(query: NewsQuery): string {
+  const params = new URLSearchParams({
+    q: query.googleNewsQuery,
+    hl: 'en-US',
+    gl: 'US',
+    ceid: 'US:en',
+  });
+  return `https://news.google.com/search?${params.toString()}`;
+}
 
 const GDELT_ENDPOINT = 'https://api.gdeltproject.org/api/v2/doc/doc';
 const MAX_RECORDS = 25;
