@@ -117,6 +117,7 @@ code {
 
 
 
+
 /* ── Layout ───────────────────────────────────────────────── */
 
 .app-content {
@@ -2929,3 +2930,46 @@ code {
   color: #94a3b8;
   margin: 0.35rem 0 0;
 }
+/* ── Hour playback + day/night indicator ──────────────────── */
+.hour-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.hour-selector label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.hour-play-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid #bfdbfe;
+  background: #eff6ff;
+  color: #1d4ed8;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.hour-play-btn:hover { background: #dbeafe; }
+.hour-play-btn[aria-pressed="true"] { background: #1d4ed8; color: #fff; }
+
+.day-night-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.day-night-indicator .dial-face { fill: #1e293b; }
+.day-night-indicator .dial-day-half { fill: #93c5fd; }
+.day-night-indicator .dial-marker { fill: #f8fafc; stroke: #334155; stroke-width: 0.6; }
+
+.day-night-indicator.day { color: #d97706; }
+.day-night-indicator.night { color: #64748b; }

@@ -13,7 +13,7 @@
 import { useMemo, useRef, useState, useEffect, useCallback } from 'react';
 import {
   Sun, Home, Atom, Flame, Wind, Battery, Car, Server,
-  ArrowRight, ArrowLeft, Factory, Cable
+  ArrowRight, ArrowLeft, Factory, Cable, Play, Pause, MoonStar
 } from 'lucide-react';
 import type { ScenarioConfig, HourResult } from '../simulation/types';
 import { FPL_PUBLIC_BASELINE_DATE, FPL_SCALE_FACTOR } from '../data/fplPublicBaseline';
@@ -83,7 +83,53 @@ function relativePos(el: HTMLElement, container: HTMLElement) {
   };
 }
 
+/** Sun/moon dial indicating the selected hour (midnight at top). */
+function DayNightIndicator({ hour }: { hour: number }) {
+  const isDay = hour >= 6 && hour < 18;
+  const angle = (hour / 24) * 360;
+  return (
+    <span
+      className={`day-night-indicator ${isDay ? 'day' : 'night'}`}
+      role="img"
+      aria-label={isDay ? 'Daytime' : 'Nighttime'}
+      title={`${hour}:00 — ${isDay ? 'day' : 'night'}`}
+    >
+      <svg viewBox="0 0 26 26" width="26" height="26" aria-hidden="true">
+        {/* dial face: day half (right) vs night half (left) */}
+        <circle cx="13" cy="13" r="11" className="dial-face" />
+        <path d="M 13 2 A 11 11 0 0 1 13 24 Z" className="dial-day-half" />
+        {/* marker orbiting the dial, 0h at top */}
+        <g transform={`rotate(${angle} 13 13)`}>
+          <circle cx="13" cy="4.2" r="2.6" className="dial-marker" />
+        </g>
+      </svg>
+      {isDay ? <Sun size={12} /> : <MoonStar size={12} />}
+    </span>
+  );
+}
+
 export function EnergyFlow({ config, hours, selectedHour, onHourChange }: EnergyFlowProps) {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const hourRef = useRef(selectedHour);
+  hourRef.current = selectedHour;
+
+  // Playback: advance one hour per second, looping 23 → 0.
+  useEffect(() => {
+    if (!isPlaying) return;
+    const interval = window.setInterval(() => {
+      hourRef.current = (hourRef.current + 1) % 24;
+      onHourChange(hourRef.current);
+    }, 1000);
+    return () => window.clearInterval(interval);
+  }, [isPlaying, onHourChange]);
+
+  const handleHourSelect = (hour: number) => {
+    // Manual selection pauses playback; strategy changes leave the hour alone.
+    setIsPlaying(false);
+    hourRef.current = hour;
+    onHourChange(hour);
+  };
+
   const hour = hours[selectedHour];
   if (!hour) return null;
 
@@ -334,6 +380,15 @@ export function EnergyFlow({ config, hours, selectedHour, onHourChange }: Energy
           )}
         </div>
         <div className="hour-selector">
+          <button
+            type="button"
+            className="hour-play-btn"
+            onClick={() => setIsPlaying(p => !p)}
+            aria-label={isPlaying ? 'Pause hourly playback' : 'Play hourly playback'}
+            aria-pressed={isPlaying}
+          >
+            {isPlaying ? <Pause size={15} /> : <Play size={15} />}
+          </button>
           <label>
             Time of Day:
             <input
@@ -341,8 +396,9 @@ export function EnergyFlow({ config, hours, selectedHour, onHourChange }: Energy
               min="0"
               max="23"
               value={selectedHour}
-              onChange={(e) => onHourChange(parseInt(e.target.value, 10))}
+              onChange={(e) => handleHourSelect(parseInt(e.target.value, 10))}
             />
+            <DayNightIndicator hour={selectedHour} />
             <span className="hour-display">{selectedHour}:00</span>
           </label>
         </div>

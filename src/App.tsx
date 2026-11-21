@@ -43,18 +43,9 @@ function App() {
 
   const handleConfigChange = (newConfig: ScenarioConfig) => {
     setConfig(newConfig)
-    const newResult = simulateScenario(newConfig)
-    setResult(newResult)
-    // Reset to peak hour of new scenario
-    let peakHour = 0
-    let peakDemand = 0
-    newResult.hours.forEach((h, i) => {
-      if (h.totalDemandMW > peakDemand) {
-        peakDemand = h.totalDemandMW
-        peakHour = i
-      }
-    })
-    setSelectedHour(peakHour)
+    setResult(simulateScenario(newConfig))
+    // Preserve selectedHour: strategy/config changes are separate from time
+    // selection, and the hour index (0–23) stays valid for every scenario.
   }
 
   // Traditional-mode hours for financial comparison
@@ -111,6 +102,7 @@ function App() {
           >
             {showAssumptions ? 'Hide Assumptions' : 'Assumptions'}
           </button>
+
         </div>
       </header>
 
