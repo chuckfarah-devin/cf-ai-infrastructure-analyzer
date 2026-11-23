@@ -113,6 +113,10 @@ export function EnergyFlow({ config, hours, selectedHour, onHourChange }: Energy
   const hourRef = useRef(selectedHour);
   hourRef.current = selectedHour;
 
+  useEffect(() => {
+    setIsPlaying(false);
+  }, [config.operatingMode]);
+
   // Playback: advance one hour per second, looping 23 → 0.
   useEffect(() => {
     if (!isPlaying) return;
