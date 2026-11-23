@@ -422,9 +422,11 @@ function SiteDetail({
 }
 
 // ── Main Site Explorer component ─────────────────────────────
-export function SiteExplorer() {
+export function SiteExplorer({ initialSiteId }: { initialSiteId?: string } = {}) {
   const [section, setSection] = useState<'reuse' | 'projects'>('reuse');
-  const [selectedSiteId, setSelectedSiteId] = useState<string>(CANDIDATE_SITES[0].id);
+  const [selectedSiteId, setSelectedSiteId] = useState<string>(
+    () => CANDIDATE_SITES.some(s => s.id === initialSiteId) ? initialSiteId! : CANDIDATE_SITES[0].id,
+  );
   const [viewMode, setViewMode] = useState<'overview' | 'satellite' | 'vision'>('overview');
   const selectedSite = CANDIDATE_SITES.find(s => s.id === selectedSiteId) ?? CANDIDATE_SITES[0];
 

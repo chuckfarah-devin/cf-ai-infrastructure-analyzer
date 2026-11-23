@@ -24,6 +24,8 @@ interface EnergyFlowProps {
   hours: HourResult[];
   selectedHour: number;
   onHourChange: (hour: number) => void;
+  isPlaying: boolean;
+  onPlayingChange: (playing: boolean) => void;
 }
 
 const resourceConfig: Record<
@@ -108,14 +110,13 @@ function DayNightIndicator({ hour }: { hour: number }) {
   );
 }
 
-export function EnergyFlow({ config, hours, selectedHour, onHourChange }: EnergyFlowProps) {
-  const [isPlaying, setIsPlaying] = useState(false);
+export function EnergyFlow({ config, hours, selectedHour, onHourChange, isPlaying, onPlayingChange }: EnergyFlowProps) {
   const hourRef = useRef(selectedHour);
   hourRef.current = selectedHour;
 
   useEffect(() => {
-    setIsPlaying(false);
-  }, [config.operatingMode]);
+    onPlayingChange(false);
+  }, [config.operatingMode, onPlayingChange]);
 
   // Playback: advance one hour per second, looping 23 → 0.
   useEffect(() => {
@@ -129,7 +130,7 @@ export function EnergyFlow({ config, hours, selectedHour, onHourChange }: Energy
 
   const handleHourSelect = (hour: number) => {
     // Manual selection pauses playback; strategy changes leave the hour alone.
-    setIsPlaying(false);
+    onPlayingChange(false);
     hourRef.current = hour;
     onHourChange(hour);
   };
@@ -387,7 +388,7 @@ export function EnergyFlow({ config, hours, selectedHour, onHourChange }: Energy
           <button
             type="button"
             className="hour-play-btn"
-            onClick={() => setIsPlaying(p => !p)}
+            onClick={() => onPlayingChange(!isPlaying)}
             aria-label={isPlaying ? 'Pause hourly playback' : 'Play hourly playback'}
             aria-pressed={isPlaying}
           >

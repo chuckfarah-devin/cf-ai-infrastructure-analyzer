@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import { simulateScenario } from './simulation/engine'
 import { floridaDefaults } from './data/floridaDefaults'
 import { defaultFinancialAssumptions } from './data/financialDefaults'
@@ -13,7 +13,9 @@ import { FeaturedCharts } from './components/FeaturedCharts'
 import { FinancialDashboard } from './components/FinancialDashboard'
 import { AssumptionsPanel } from './components/AssumptionsPanel'
 import { SiteExplorer } from './components/SiteExplorer'
-import { Menu, X, ChevronDown, ChevronRight, Zap, MapPin } from 'lucide-react'
+import { Menu, X, ChevronDown, ChevronRight, Zap, MapPin, PlayCircle } from 'lucide-react'
+import { GuidedTour, TourPlayButton, type TourStepContent } from './components/GuidedTour'
+import { TOUR_HOUR, TOUR_SITE_ID, computeTourDiffs } from './data/guidedTour'
 import './index.css'
 
 type AppTab = 'energy-flow' | 'site-explorer';
@@ -26,6 +28,10 @@ function App() {
   const [financialAssumptions, setFinancialAssumptions] = useState<FinancialAssumptions>(defaultFinancialAssumptions)
   const [showDetailedCharts, setShowDetailedCharts] = useState(false)
   const [activeTab, setActiveTab] = useState<AppTab>('energy-flow')
+  // Playback lifted so the guided tour can control and pause it.
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [tourStep, setTourStep] = useState<number | null>(null)
+  const tourSnapshot = useRef<{ config: ScenarioConfig; hour: number; tab: AppTab } | null>(null)
 
   // Lifted selectedHour state so MetricRibbon, EnergyFlow, and FeaturedCharts share it
   const [selectedHour, setSelectedHour] = useState<number>(() => {
@@ -47,6 +53,80 @@ function App() {
     // Preserve selectedHour: strategy/config changes are separate from time
     // selection, and the hour index (0–23) stays valid for every scenario.
   }
+
+  // ── Guided tour ──────────────────────────────────────────
+  const tourDiffs = useMemo(() => {
+    const t = simulateScenario({ ...floridaDefaults, operatingMode: 'traditional' }).hours[TOUR_HOUR]
+    const c = simulateScenario({ ...floridaDefaults, operatingMode: 'coordinated' }).hours[TOUR_HOUR]
+    return computeTourDiffs(t, c)
+  }, [])
+
+  const applyTourStep = (step: number) => {
+    setIsPlaying(false)
+    if (step === 0) {
+      setActiveTab('energy-flow')
+      const c = { ...floridaDefaults, operatingMode: 'traditional' as const }
+      setConfig(c); setResult(simulateScenario(c))
+      setSelectedHour(TOUR_HOUR)
+    } else if (step === 1) {
+      const c = { ...floridaDefaults, operatingMode: 'coordinated' as const }
+      setConfig(c); setResult(simulateScenario(c))
+      setSelectedHour(TOUR_HOUR)
+    } else if (step === 2) {
+      setActiveTab('energy-flow')
+    } else if (step === 3) {
+      setActiveTab('site-explorer')
+    }
+    setTourStep(step)
+  }
+
+  const startTour = () => {
+    tourSnapshot.current = { config, hour: selectedHour, tab: activeTab }
+    applyTourStep(0)
+  }
+
+  const endTour = () => {
+    setIsPlaying(false)
+    const snap = tourSnapshot.current
+    if (snap) {
+      setConfig(snap.config); setResult(simulateScenario(snap.config))
+      setSelectedHour(snap.hour); setActiveTab(snap.tab)
+    }
+    tourSnapshot.current = null
+    setTourStep(null)
+  }
+
+  const TOUR_STEPS: TourStepContent[] = [
+    {
+      title: 'Today\u2019s approach',
+      takeaway: 'One evening hour under the Traditional strategy.',
+      explanation: 'This shows a single simulated hour at the daily demand peak — required demand on the right, supply sources on the left.',
+      detail: 'Figures are model outputs for one hour (MW), not measured grid data. The scenario uses the public FPL preset.',
+    },
+    {
+      title: 'Smarter coordination',
+      takeaway: 'The same 18:00 hour under Coordinated — identical inputs otherwise.',
+      explanation: 'Only the operating strategy changed. The differences below are computed from the model results for this exact hour.',
+      detail: 'Scope: one hour in one illustrative scenario — not a promise of system-wide results.',
+    },
+    {
+      title: 'Watch the day',
+      takeaway: 'Timing matters—not just how much capacity we build.',
+      explanation: 'Play through the 24 hours to watch midday solar and evening demand move out of phase. Playback pauses when you advance.',
+      action: <TourPlayButton playing={isPlaying} onToggle={() => setIsPlaying(p => !p)} />,
+    },
+    {
+      title: 'Look at the place',
+      takeaway: 'Energy choices live on real land.',
+      explanation: 'This profile documents the retired St. Johns River Power Park — land, water, habitat, and neighborhood context matter alongside megawatts. Documented conditions are labeled; concept imagery is illustrative, not a plan.',
+      detail: 'Profile details come from cited public records; where evidence is missing, items are marked unresolved rather than assumed.',
+    },
+    {
+      title: 'What\u2019s this telling me?',
+      takeaway: 'Evaluate energy, land, water, habitat, and community together—before committing to a design.',
+      explanation: 'Explore on your own, or run the tour again.',
+    },
+  ]
 
   // Traditional-mode hours for financial comparison
   const traditionalHours = useMemo(() => {
@@ -102,8 +182,7 @@ function App() {
           >
             {showAssumptions ? 'Hide Assumptions' : 'Assumptions'}
           </button>
-
-        </div>
+                 </div>
       </header>
 
       {showAssumptions && <AssumptionsPanel />}
@@ -114,7 +193,16 @@ function App() {
             <Controls config={config} onConfigChange={handleConfigChange} />
           </aside>
 
-          <main className="main-content">
+          <main className={`main-content ${tourStep !== null ? `tour-step-${tourStep}` : ''}`}>
+            {tourStep === null && (
+              <div className="tour-entry">
+                <button type="button" className="tour-entry-btn" onClick={startTour}>
+                  <PlayCircle size={15} /> Take a 60-second tour
+                </button>
+                <span className="tour-entry-hint">What is this showing me?</span>
+              </div>
+            )}
+
             {/* Metric ribbon */}
             {currentHour && (
               <MetricRibbon
@@ -130,6 +218,8 @@ function App() {
               hours={result.hours}
               selectedHour={selectedHour}
               onHourChange={setSelectedHour}
+              isPlaying={isPlaying}
+              onPlayingChange={setIsPlaying}
             />
 
             {/* Three featured charts */}
@@ -166,9 +256,21 @@ function App() {
       ) : (
         <div className="app-content site-explorer-content">
           <main className="main-content">
-            <SiteExplorer />
+            <SiteExplorer key={tourStep !== null ? 'tour' : 'app'} initialSiteId={TOUR_SITE_ID} />
           </main>
         </div>
+      )}
+
+      {tourStep !== null && (
+        <GuidedTour
+          step={tourStep}
+          content={TOUR_STEPS[tourStep]}
+          diffs={tourStep === 1 ? tourDiffs : undefined}
+          onNext={() => applyTourStep(tourStep + 1)}
+          onBack={() => applyTourStep(tourStep - 1)}
+          onExit={endTour}
+          onRestart={() => applyTourStep(0)}
+        />
       )}
     </div>
   )
