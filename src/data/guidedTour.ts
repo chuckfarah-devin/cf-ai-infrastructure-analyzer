@@ -13,6 +13,9 @@ import type { HourResult } from '../simulation/types';
 /** Evening demand peak in the fpl-public scenario (verified: hour 18). */
 export const TOUR_HOUR = 18;
 
+/** Start of the "Watch the day" playback step — mid-morning so the full solar curve is visible before the evening peak. */
+export const TOUR_PLAY_START_HOUR = 10;
+
 /** Documented brownfield example for the "Look at the place" step. */
 export const TOUR_SITE_ID = 'st-johns';
 
@@ -39,14 +42,14 @@ export function computeTourDiffs(
   const gridDelta = coordinated.netGridLoadMW - traditional.netGridLoadMW;
   diffs.push({
     label: `${gridDelta > 0 ? '+' : ''}${Math.round(gridDelta)} MW`,
-    scope: `grid supply needed at ${TOUR_HOUR}:00 (coordinated vs. traditional)`,
+    scope: `additional grid supply required at ${TOUR_HOUR}:00 (coordinated vs. traditional) — residual utility need after local sources, not total electricity use`,
     deltaMW: gridDelta,
   });
 
   const storageDelta = coordinated.batteryDischargeMW - traditional.batteryDischargeMW;
   diffs.push({
     label: `${storageDelta > 0 ? '+' : ''}${Math.round(storageDelta)} MW`,
-    scope: 'storage supplying demand at the same hour',
+    scope: 'storage discharging at the same hour — shifts energy across hours and depends on earlier charging and modeled availability',
     deltaMW: storageDelta,
   });
 

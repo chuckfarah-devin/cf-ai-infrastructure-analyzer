@@ -15,7 +15,7 @@ import { AssumptionsPanel } from './components/AssumptionsPanel'
 import { SiteExplorer } from './components/SiteExplorer'
 import { Menu, X, ChevronDown, ChevronRight, Zap, MapPin, PlayCircle } from 'lucide-react'
 import { GuidedTour, TourPlayButton, type TourStepContent } from './components/GuidedTour'
-import { TOUR_HOUR, TOUR_SITE_ID, computeTourDiffs } from './data/guidedTour'
+import { TOUR_HOUR, TOUR_SITE_ID, TOUR_PLAY_START_HOUR, computeTourDiffs } from './data/guidedTour'
 import './index.css'
 
 type AppTab = 'energy-flow' | 'site-explorer';
@@ -74,6 +74,9 @@ function App() {
       setSelectedHour(TOUR_HOUR)
     } else if (step === 2) {
       setActiveTab('energy-flow')
+      // Start mid-morning so playback shows the full solar day before the
+      // 18:00 evening peak — the comparison step itself stays at 18:00.
+      setSelectedHour(TOUR_PLAY_START_HOUR)
     } else if (step === 3) {
       setActiveTab('site-explorer')
     }
@@ -106,13 +109,13 @@ function App() {
     {
       title: 'Smarter coordination',
       takeaway: 'The same 18:00 hour under Coordinated — identical inputs otherwise.',
-      explanation: 'Only the operating strategy changed. The differences below are computed from the model results for this exact hour.',
-      detail: 'Scope: one hour in one illustrative scenario — not a promise of system-wide results.',
+      explanation: 'Only the operating strategy changed. The differences below are computed from the model results for this exact hour. A value of 0 MW means no additional grid supply is required in this modeled hour — the system is not off-grid.',
+      detail: 'Scope: one hour in one illustrative scenario — not a promise of system-wide results. Storage values are the Coordinated strategy\u2019s modeled discharge at this hour; Traditional contributes none because it does not coordinate storage with the evening peak.',
     },
     {
       title: 'Watch the day',
       takeaway: 'Timing matters—not just how much capacity we build.',
-      explanation: 'Play through the 24 hours to watch midday solar and evening demand move out of phase. Playback pauses when you advance.',
+      explanation: 'Starting at 10:00, press play and watch solar build through midday, fade in late afternoon, and demand peak at 18:00. Playback pauses when you advance.',
       action: <TourPlayButton playing={isPlaying} onToggle={() => setIsPlaying(p => !p)} />,
     },
     {
@@ -182,7 +185,7 @@ function App() {
           >
             {showAssumptions ? 'Hide Assumptions' : 'Assumptions'}
           </button>
-                 </div>
+        </div>
       </header>
 
       {showAssumptions && <AssumptionsPanel />}
