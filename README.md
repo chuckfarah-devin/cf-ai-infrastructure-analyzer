@@ -4,13 +4,13 @@ An interactive, educational web application exploring how Florida's grid
 might respond to AI data-center growth — and how previously developed
 industrial sites could be responsibly evaluated for reuse.
 
-> **[Live Demo — Version 2 Preview](https://chuckfarah-devin.github.io/cf-ai-infrastructure-analyzer-preview/)**
-> The enhanced preview adds the four-site explorer, environmental GIS,
-> and Responsible Design Vision galleries. This is a development preview,
-> not the stable production release.
+> **[Live Demo — Stable V2](https://chuckfarah-devin.github.io/cf-ai-infrastructure-analyzer/)**
+> The current stable release: guided tour, hourly playback, seven site
+> profiles with external news-search links, and improved environmental
+> overlays.
 >
-> **[Stable Release 1](https://chuckfarah-devin.github.io/cf-ai-infrastructure-analyzer/)**
-> The original production deployment.
+> **[Development Preview](https://chuckfarah-devin.github.io/cf-ai-infrastructure-analyzer-preview/)**
+> Mirror used to preview upcoming work before it is promoted to stable.
 
 ## Overview
 
@@ -29,20 +29,32 @@ sites are evaluated when communities consider redevelopment.
   adjustable AI Data Center Load. Two Energy Strategy modes —
   **Traditional** and **Coordinated** — are compared side by side,
   with an illustrative financial dashboard (demand charges, avoided
-  capacity value, customer cost).
-- **Site Explorer** — four Florida case studies (St. Johns River Power
-  Park, DeSoto County Plant, Indiantown Cogeneration, Escambia Wood
-  Treating) illustrating different questions about AI infrastructure,
-  energy-site reuse, and conditional redevelopment. Not all four are
-  proposed data centers.
+  capacity value, customer cost). Includes an hourly **play/pause**
+  animation with a day/night indicator that advances through the
+  24-hour day while preserving the selected hour across strategy
+  switches.
+- **Guided Tour** — a five-step, user-paced executive walkthrough
+  ("Take a 60-second tour") that compares the two strategies at the
+  same modeled hour, plays through a day of solar and demand, visits a
+  documented brownfield example, and closes with evaluation guidance.
+  Captures and restores the user's settings, hour, and view on exit.
+- **Site Explorer** — seven profiles in two groups: four Brownfield &
+  Reuse case studies (St. Johns River Power Park, DeSoto County Plant,
+  Indiantown Cogeneration, Escambia Wood Treating) and three Florida
+  Projects (Project Tango, Fort Meade, Iron Mountain MIA-1). Each
+  carries evidence-qualified records and a "Search latest coverage"
+  link opening Google News in a new tab — labeled unverified and
+  separate from the curated record.
 - **Environmental GIS** — satellite basemaps plus public
   environmental-context layers: mapped wetlands (USFWS National
   Wetlands Inventory, FDEP-hosted service), effective flood hazards
   (FEMA National Flood Hazard Layer), conservation lands (Florida
   Natural Areas Inventory / FDEP), aquatic preserves (FDEP Division
   of State Lands), and a NOAA Composite Shoreline reference
-  (FDEP-hosted extract). Data originates with those agencies; FDEP
-  and FEMA host the public services the app queries.
+  (FDEP-hosted extract). Flood zones render as readable vector
+  polygons with corrected category classification. Data originates
+  with those agencies; FDEP and FEMA host the public services the
+  app queries.
 - **Responsible Design Vision** — ten conceptual illustrations across
   the four sites, each labeled *Illustrative Concept — Not a Site Plan*
   with evidence notes distinguishing documented public records,
@@ -60,7 +72,7 @@ ArcGIS basemap styles
 ## Development approach
 
 AI-assisted, specification-driven, incremental development with
-automated testing (56-test suite) and staged human review checkpoints.
+automated testing (65-test suite) and staged human review checkpoints.
 Site data carries explicit confidence classifications separating
 verified public records from inference and unresolved questions.
 
@@ -81,7 +93,7 @@ verified public records from inference and unresolved questions.
 ```bash
 npm install
 npm run dev        # http://localhost:5173
-npm test -- --run  # 56 tests
+npm test -- --run  # 65 tests
 npm run build      # production build → dist/
 ```
 
